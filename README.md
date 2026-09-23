@@ -49,7 +49,7 @@ These directories currently contain only `.gitkeep` placeholders.
 
 Follow [ROADMAP.md](ROADMAP.md) one phase at a time. Complete and verify Phase 0
 before beginning Phase 1. There are no install, run, or test commands configured
-yet. Git has not been initialized in this workspace.
+yet. Git is initialized on `main`; no remote is configured.
 
 The environment template contains placeholders and development examples, not
 production-ready configuration. Keep real credentials in ignored local files or

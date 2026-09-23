@@ -85,6 +85,9 @@ New or materially changed tests, evaluation suites, release gates, or QA process
 
 ## Added
 
+- Initialized Git on `main` and committed the initial repository baseline.
+- Added Markdown-specific whitespace attributes to preserve existing hard breaks and test examples during Git checks.
+
 - Phase 0 repository skeleton with application, infrastructure, scripts, tests, and evaluation directories.
 - README documenting the planning-only state and canonical documentation entry points.
 - `.gitignore` protecting environment secrets and generated/runtime artifacts.

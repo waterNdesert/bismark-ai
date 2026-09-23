@@ -2,8 +2,8 @@
 
 **Last updated:** 2026-09-23  
 **Current phase:** Phase 0 — Repository Foundation  
-**Current task:** Repository normalization and canonical structure  
-**Task status:** COMPLETED — documentation normalization validated  
+**Current task:** Git initialization and repository baseline  
+**Task status:** COMPLETED — Git initialized and baseline committed  
 **Overall status:** Documentation and directory skeleton only; Phase 0 remains incomplete.
 
 ## Documentation authority
@@ -47,7 +47,22 @@ preserves those documents and adds the following foundation:
 
 No application code, manifests, lockfiles, migrations, Supabase configuration,
 Dockerfiles, runnable Compose configuration, Caddyfile, or CI workflows exist.
-No dependencies were installed. Git has not been initialized.
+No dependencies were installed. Git is initialized on `main`, with no remote.
+
+## Completed version-control foundation
+
+- Repository normalization and canonical documentation structure completed.
+- Git repository initialized; `main` branch established.
+- Baseline commit created: `3465bfe` — `chore: establish Bismark AI project foundation`.
+- Baseline contains 33 files: documentation, environment example, ignore rules,
+  Markdown whitespace attributes, and seven empty directory placeholders.
+- `.gitattributes` permits Markdown end-of-line spaces used for hard breaks and
+  whitespace examples; other Git whitespace checks remain enabled.
+- Secret scan found no likely credentials; sensitive example fields are blank.
+- Ignore checks passed for local environment files, dependencies, and caches;
+  `.env.example` is tracked. Staged whitespace checks passed.
+- Initial commit verification found a clean working tree and no remote.
+- This state record and changelog are recorded separately from the baseline.
 
 ## Accepted architecture
 
@@ -133,7 +148,7 @@ claims. Production settings validation and immutable deployment tags remain
 future implementation work. The example Redis hostname assumes container
 networking; a host-run development process will need appropriate configuration.
 
-## Validation
+## Normalization validation (prior task)
 
 Validation completed on 2026-09-23:
 
@@ -159,11 +174,10 @@ or tooling is configured. No live infrastructure or provider checks are claimed.
 
 ## Remaining Phase 0 work
 
-- Initialize Git.
 - Scaffold the Next.js frontend.
 - Scaffold the FastAPI backend.
 - Select runtime versions and reproducible dependency management.
-- Implement environment loading and validation.
+- Implement typed environment loading and validation.
 - Configure linting, formatting, and type checking.
 - Establish a test harness and initial tests.
 - Add the local Docker/Redis baseline.
@@ -171,5 +185,10 @@ or tooling is configured. No live infrastructure or provider checks are claimed.
 - Verify frontend/backend/Redis startup and all Phase 0 exit criteria.
 
 Phase 1 has not started. No Supabase initialization, migrations, or production
-operations were performed. Next work requires approval; a bounded Git
-initialization task can precede application scaffolding.
+operations were performed. Phase 0 remains incomplete.
+
+## Recommended next task
+
+Scaffold the frontend and backend development foundations.
+
+This task has not started and requires approval.
