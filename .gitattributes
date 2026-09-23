@@ -1,0 +1,2 @@
+# Markdown uses trailing spaces for hard breaks and whitespace examples.
+*.md whitespace=-blank-at-eol

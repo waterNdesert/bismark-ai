@@ -1,0 +1,36 @@
+# Local secrets; keep the canonical placeholder template.
+.env
+.env.*
+!.env.example
+# Deployment environment files (including env/production.env).
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Node
+node_modules/
+.next/
+out/
+dist/
+
+# IDE / OS
+.DS_Store
+.idea/
+*.swp
+
+# Coverage / build artifacts
+coverage/
+htmlcov/
+.coverage
+
+# Temporary / runtime
+*.log
+tmp/
+temp/
