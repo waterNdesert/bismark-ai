@@ -1,7 +1,7 @@
 from typing import Literal
 from urllib.parse import urlsplit
 
-from pydantic import field_validator
+from pydantic import SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,6 +14,13 @@ class Settings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     frontend_url: str = "http://localhost:3000"
     cors_origins: str = "http://localhost:3000"
+    supabase_url: str | None = None
+    supabase_anon_key: SecretStr | None = None
+    supabase_service_role_key: SecretStr | None = None
+    database_url: SecretStr | None = None
+    db_pool_size: int = 10
+    db_max_overflow: int = 10
+    db_pool_timeout_seconds: int = 30
 
     @field_validator("frontend_url", "cors_origins")
     @classmethod

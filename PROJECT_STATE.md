@@ -1,10 +1,10 @@
 # PROJECT_STATE.md — Bismark AI
 
 **Last updated:** 2026-09-24  
-**Current phase:** Phase 0 — Repository Foundation
-**Current task:** Phase 0 complete; Phase 1 pending approval
-**Phase status:** COMPLETE
-**Overall status:** Repository foundation, local Docker/Redis baseline, and CI/tooling validation are complete. Phase 1 has not started.
+**Current phase:** Phase 1 — Supabase Foundation
+**Current task:** Phase 1A implemented; GitHub CI verification pending
+**Phase status:** Phase 1A IMPLEMENTED — local live verification passed
+**Overall status:** Supabase PostgreSQL connectivity, SQLAlchemy, Alembic, pgvector, and database readiness are verified locally. GitHub CI is pending because no remote is configured. Product schema and later Phase 1 work have not started.
 
 ## Documentation authority
 
@@ -43,6 +43,8 @@ now includes:
 - Prettier frontend formatting with `format` and `format:check` scripts.
 - GitHub Actions validation for backend, frontend and Docker Compose configuration
   on pull requests and pushes to `main`.
+- SQLAlchemy 2.x, Alembic, and psycopg database foundation.
+- Secret-typed Supabase/database settings and generic `/ready/database` health.
 - Framework-generated web AGENTS.md/CLAUDE.md guidance retained because Next.js
   recreates it during development startup.
 
@@ -50,8 +52,10 @@ The local Docker/Redis baseline is validated for the approved Phase 0 scope.
 The API image builds and starts as non-root `appuser`; `/health` and `/ready`
 return HTTP 200, Redis responds with `PONG`, Redis remains internal-only, and
 the stack tears down cleanly.
-No database, authentication, domain features, migrations, ingestion worker,
-Caddy production config or production deployment exists. Dependencies installed remain
+Supabase PostgreSQL connectivity via the Session Pooler and the extension-only
+migration are verified.
+No product schema, authentication, domain features, ingestion worker, RLS,
+storage, Caddy production config or production deployment exists. Dependencies installed remain
 limited to the current application/tooling foundation and local Docker service
 stack. Git remains on `main` with no remote.
 
@@ -95,7 +99,7 @@ and reranking; external generation through `LLMProvider`.
 | Documentation and repository skeleton                     | PARTIAL FOUNDATION           | Paths normalized; applications and tooling present.                                                                 |
 | Frontend / backend                                        | PARTIAL                      | Minimal page and health routes validated; product features absent.                                                  |
 | Dependency management / lint / formatting / type checking | COMPLETE                     | Locked app dependencies, Ruff, mypy, Prettier, ESLint, TypeScript and builds pass locally; CI runs the same checks. |
-| Database / migrations / Supabase                          | NOT STARTED                  | Specifications only; no connection or migration executed.                                                           |
+| Database / migrations / Supabase                          | COMPLETE (Phase 1A)          | Supabase PostgreSQL connection verified; SQLAlchemy/Alembic foundation and vector extension migration applied.      |
 | Auth / organizations / workspaces / authorization         | NOT STARTED                  | Specifications only.                                                                                                |
 | Documents / storage / ingestion                           | NOT STARTED                  | Specifications only.                                                                                                |
 | Redis / worker / parser / chunking                        | PARTIAL                      | Redis local development baseline is validated in Docker; no worker implementation yet.                              |
@@ -217,14 +221,12 @@ Known tooling warnings/decisions:
   pull requests and pushes to `main`.
 - Documentation and repository structure are present.
 
-Phase 1 has not started. No provider configuration, migrations or deployments ran.
+Phase 1A local implementation and live verification have completed. GitHub CI
+verification remains pending because no remote is configured. No product schema,
+authentication, RLS, storage, provider configuration, or production deployment
+has started.
 Open parser, worker, model and citation-retention decisions remain unchanged.
-
-## Next phase
-
-Phase 1 — Supabase Foundation.
 
 ## Recommended next task
 
-Establish Supabase project configuration, PostgreSQL connection, extensions, and
-migration foundation.
+Design and implement the initial multi-tenant schema foundation.

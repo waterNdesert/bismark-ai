@@ -1,4 +1,4 @@
-.PHONY: api-install api-dev api-test api-lint api-format-check api-typecheck api-check web-install web-dev web-build web-format web-format-check web-lint web-typecheck web-check check format-check docker-build docker-up docker-down docker-logs docker-ps
+.PHONY: api-install api-dev api-test api-lint api-format-check api-typecheck api-check db-check db-upgrade db-current db-history web-install web-dev web-build web-format web-format-check web-lint web-typecheck web-check check format-check docker-build docker-up docker-down docker-logs docker-ps
 api-install:
 	cd apps/api && uv sync --locked
 api-dev:
@@ -12,6 +12,14 @@ api-format-check:
 api-typecheck:
 	cd apps/api && uv run --locked mypy app tests
 api-check: api-lint api-format-check api-typecheck api-test
+db-check:
+	cd apps/api && uv run --locked python ../../scripts/run_with_env.py ../../.env python -m app.db.health
+db-upgrade:
+	cd apps/api && uv run --locked python ../../scripts/run_with_env.py ../../.env alembic upgrade head
+db-current:
+	cd apps/api && uv run --locked python ../../scripts/run_with_env.py ../../.env alembic current
+db-history:
+	cd apps/api && uv run --locked python ../../scripts/run_with_env.py ../../.env alembic history
 web-install:
 	pnpm --dir apps/web install --frozen-lockfile
 web-dev:

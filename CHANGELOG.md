@@ -95,11 +95,16 @@ New or materially changed tests, evaluation suites, release gates, or QA process
 - GitHub Actions validation workflow for backend, frontend and Docker Compose configuration.
 - Frontend Prettier formatting automation with `format` and `format:check` scripts.
 - Unified `make check`, `make api-check`, `make web-check` and `make format-check` commands.
+- SQLAlchemy, Alembic, and psycopg foundation for Supabase PostgreSQL.
+- Extension-only Alembic migration enabling pgvector.
+- Generic `/ready/database` health check and database developer commands.
 
 ## Deployment
 
 - Validated the local API Docker image and Redis development service: API health/readiness returned HTTP 200, Redis returned `PONG`, Redis was not host-published, and teardown left no project containers running.
 - Completed Phase 0 repository foundation and developer-tooling validation.
+- Verified Supabase PostgreSQL connectivity, Alembic migration execution, and pgvector availability for Phase 1A.
+- Phase 1A intentionally contains no product schema, authentication, storage, RLS, or RAG implementation.
 
 - Initialized Git on `main` and committed the initial repository baseline.
 - Added Markdown-specific whitespace attributes to preserve existing hard breaks and test examples during Git checks.

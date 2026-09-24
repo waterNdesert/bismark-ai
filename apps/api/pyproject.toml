@@ -2,7 +2,14 @@
 name = "bismark-api"
 version = "0.1.0"
 requires-python = ">=3.12,<3.13"
-dependencies = ["fastapi", "uvicorn", "pydantic-settings"]
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic-settings",
+    "sqlalchemy>=2.0.54",
+    "alembic>=1.20.0",
+    "psycopg[binary]>=3.3.6",
+]
 
 [dependency-groups]
 dev = ["pytest", "httpx", "ruff", "mypy"]
