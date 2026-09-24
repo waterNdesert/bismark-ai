@@ -1,0 +1,16 @@
+# Ignore local and generated files outside the API build context.
+.git
+.env
+.env.*
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.next
+**/node_modules
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/*.log
+.DS_Store

@@ -1,10 +1,10 @@
 # PROJECT_STATE.md — Bismark AI
 
 **Last updated:** 2026-09-24  
-**Current phase:** Phase 0 — Repository Foundation  
-**Current task:** Frontend and backend development foundations  
-**Task status:** COMPLETED — application foundation validation passed  
-**Overall status:** Minimal runnable applications and tooling; Phase 0 remains incomplete.
+**Current phase:** Phase 0 — local Docker and Redis baseline  
+**Current task:** Local API Docker image and Redis development service  
+**Task status:** COMPLETED — local API Docker and Redis runtime validation passed
+**Overall status:** Minimal runnable applications and tooling with a validated local Docker/Redis baseline; CI and remaining Phase 0 tooling remain incomplete.
 
 ## Documentation authority
 
@@ -43,10 +43,14 @@ now includes:
 - Framework-generated web AGENTS.md/CLAUDE.md guidance retained because Next.js
   recreates it during development startup.
 
-No database, authentication, domain features, migrations, Redis integration,
-Dockerfiles, Compose, Caddy configuration, CI or deployment exists. Dependencies
-installed are limited to the current application/tooling foundation.
-Git remains on `main` with no remote.
+The local Docker/Redis baseline is validated for the approved Phase 0 scope.
+The API image builds and starts as non-root `appuser`; `/health` and `/ready`
+return HTTP 200, Redis responds with `PONG`, Redis remains internal-only, and
+the stack tears down cleanly.
+No database, authentication, domain features, migrations, ingestion worker,
+Caddy production config, CI or deployment exists. Dependencies installed remain
+limited to the current application/tooling foundation and local Docker service
+stack. Git remains on `main` with no remote.
 
 ## Completed version-control foundation
 
@@ -83,21 +87,22 @@ and reranking; external generation through `LLMProvider`.
 
 ## Implementation inventory
 
-| Area | Status | Evidence |
-|---|---|---|
-| Documentation and repository skeleton | PARTIAL FOUNDATION | Paths normalized; applications and tooling absent. |
-| Frontend / backend | PARTIAL | Minimal page and health routes validated; product features absent. |
-| Dependency management / lint / formatting / type checking | PARTIAL | App lockfiles and lint/type checks pass; Ruff formatting configured; frontend formatting automation pending. |
-| Database / migrations / Supabase | NOT STARTED | Specifications only; no connection or migration executed. |
-| Auth / organizations / workspaces / authorization | NOT STARTED | Specifications only. |
-| Documents / storage / ingestion | NOT STARTED | Specifications only. |
-| Redis / worker / parser / chunking | NOT STARTED | Specifications only. |
-| Embeddings / vector / FTS / fusion / reranking | NOT STARTED | Specifications only. |
-| Conversations / chat / streaming / citations | NOT STARTED | Specifications only. |
-| Feedback / audit / usage | NOT STARTED | Specifications only. |
-| Tests / evaluations | PARTIAL | 9 backend tests pass; frontend component tests and RAG evaluations not implemented. |
-| Docker / Caddy / Vercel integration / CI | NOT STARTED | Documentation only. |
-| Production | UNKNOWN externally | No deployment performed or verified from this workspace. |
+| Area                                                      | Status             | Evidence                                                                                                                                              |
+| --------------------------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Documentation and repository skeleton                     | PARTIAL FOUNDATION | Paths normalized; applications and tooling present.                                                                                                   |
+| Frontend / backend                                        | PARTIAL            | Minimal page and health routes validated; product features absent.                                                                                    |
+| Dependency management / lint / formatting / type checking | PARTIAL            | App lockfiles and lint/type checks pass; frontend formatting automation pending.                                                                      |
+| Database / migrations / Supabase                          | NOT STARTED        | Specifications only; no connection or migration executed.                                                                                             |
+| Auth / organizations / workspaces / authorization         | NOT STARTED        | Specifications only.                                                                                                                                  |
+| Documents / storage / ingestion                           | NOT STARTED        | Specifications only.                                                                                                                                  |
+| Redis / worker / parser / chunking                        | PARTIAL            | Redis local development baseline is validated in Docker; no worker implementation yet.                                                               |
+| Embeddings / vector / FTS / fusion / reranking            | NOT STARTED        | Specifications only.                                                                                                                                  |
+| Conversations / chat / streaming / citations              | NOT STARTED        | Specifications only.                                                                                                                                  |
+| Feedback / audit / usage                                  | NOT STARTED        | Specifications only.                                                                                                                                  |
+| Tests / evaluations                                       | PARTIAL            | 9 backend tests pass; frontend component tests and RAG evaluations not implemented.                                                                   |
+| Docker / Compose / local infrastructure                   | COMPLETED (Phase 0 baseline) | FastAPI image and Redis service validated under `infra/docker/compose.dev.yaml`; Redis is not host-published.                                     |
+| CI / Vercel / Caddy / production deployment               | NOT STARTED        | Documentation only; production images/hosts not configured here.                                                                                      |
+| Production                                                | UNKNOWN externally | No production deployment performed or verified from this workspace.                                                                                   |
 
 ## Security and RAG invariants
 
@@ -116,16 +121,16 @@ not implemented or tested controls. Phase 0 CORS validation has negative tests.
 
 ## Open decisions
 
-| Decision | Current state / timing |
-|---|---|
-| Parser | Docling or Unstructured; select before parser implementation. |
-| Worker framework | RQ, ARQ, Dramatiq, Celery, or a justified alternative; select before worker implementation. |
-| Voyage embedding model | Open; select before vector schema finalization. |
-| Embedding dimension | Open until the selected model is verified; no assumed 1024 default. |
-| Voyage rerank model | Open; must remain configurable. |
-| LLM provider / model | Open; integrate behind `LLMProvider`. |
-| FTS maintenance | Generated column, trigger, or application writes; select and test with schema implementation. |
-| Document retention | Soft/hard deletion, retention duration, deletion audit, and source removal timing remain open. |
+| Decision               | Current state / timing                                                                         |
+| ---------------------- | ---------------------------------------------------------------------------------------------- |
+| Parser                 | Docling or Unstructured; select before parser implementation.                                  |
+| Worker framework       | RQ, ARQ, Dramatiq, Celery, or a justified alternative; select before worker implementation.    |
+| Voyage embedding model | Open; select before vector schema finalization.                                                |
+| Embedding dimension    | Open until the selected model is verified; no assumed 1024 default.                            |
+| Voyage rerank model    | Open; must remain configurable.                                                                |
+| LLM provider / model   | Open; integrate behind `LLMProvider`.                                                          |
+| FTS maintenance        | Generated column, trigger, or application writes; select and test with schema implementation.  |
+| Document retention     | Soft/hard deletion, retention duration, deletion audit, and source removal timing remain open. |
 
 Additional database implementation choices remain documented in
 [DATABASE.md §133](docs/DATABASE.md#133-decisions-still-to-be-finalized), including
@@ -200,15 +205,14 @@ Known tooling warnings/decisions:
 
 ## Remaining Phase 0 work
 
-- Local Docker/Redis development baseline.
 - Pull-request CI.
 - Frontend formatting automation.
 - Extend environment validation when frontend/infrastructure settings are consumed.
-- Verify remaining Phase 0 exit criteria, including Redis startup and PR CI.
+- Final Phase 0 acceptance check for repo-wide developer tooling and local Docker validation.
 
 Phase 1 has not started. No provider configuration, migrations or deployments ran.
 Open parser, worker, model and citation-retention decisions remain unchanged.
 
 ## Recommended next task
 
-Local Docker and Redis development baseline. Await approval before beginning.
+Phase 0 CI and final developer-tooling baseline.

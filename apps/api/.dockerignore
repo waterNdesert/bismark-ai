@@ -1,0 +1,19 @@
+# Prevent local and generated artifacts from being copied into the image.
+.git
+.env
+.env.*
+.venv
+**/.venv
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.pytest_cache
+**/.pytest_cache
+.mypy_cache
+**/.mypy_cache
+.ruff_cache
+**/.ruff_cache
+*.log
+**/*.log
+.DS_Store

@@ -89,6 +89,13 @@ New or materially changed tests, evaluation suites, release gates, or QA process
 - Minimal Next.js App Router, TypeScript and Tailwind frontend scaffold.
 - Backend tests, Ruff/mypy tooling, frontend lint/type/build checks and per-app lockfiles.
 - Root Makefile and application development instructions.
+- Local FastAPI Docker image for the Phase 0 development baseline on Python 3.12.
+- Local Redis service in the Docker Compose development stack for internal-only service access.
+- Docker Makefile commands for build, run, logs, status, and teardown using `infra/docker/compose.dev.yaml`.
+
+## Deployment
+
+- Validated the local API Docker image and Redis development service: API health/readiness returned HTTP 200, Redis returned `PONG`, Redis was not host-published, and teardown left no project containers running.
 
 - Initialized Git on `main` and committed the initial repository baseline.
 - Added Markdown-specific whitespace attributes to preserve existing hard breaks and test examples during Git checks.
@@ -220,33 +227,43 @@ Copy this section when preparing a release.
 ## [X.Y.Z] - YYYY-MM-DD
 
 ### Added
+
 - ...
 
 ### Changed
+
 - ...
 
 ### Fixed
+
 - ...
 
 ### Security
+
 - ...
 
 ### Database
+
 - ...
 
 ### RAG
+
 - ...
 
 ### Deployment
+
 - ...
 
 ### Testing
+
 - ...
 
 ### Migration Notes
+
 - ...
 
 ### Breaking Changes
+
 - None.
 ```
 
@@ -321,6 +338,7 @@ Use:
 
 ```markdown
 ### Breaking Changes
+
 - `OLD_VAR` replaced by `NEW_VAR`.
 ```
 
@@ -343,10 +361,12 @@ Example:
 
 ```markdown
 ### Database
+
 - Added `document_chunks.search_vector`.
 - Added GIN index for full-text search.
 
 ### Migration Notes
+
 - Run `alembic upgrade head` before deploying the new API image.
 - No downtime expected.
 ```
@@ -361,6 +381,7 @@ Examples:
 
 ```markdown
 ### RAG
+
 - Changed chunk target from 700 to 800 tokens.
 - Added Reciprocal Rank Fusion for vector and keyword results.
 - Updated Voyage reranker model.
@@ -386,6 +407,7 @@ Example:
 
 ```markdown
 ### Security
+
 - Fixed workspace authorization check on document source access.
 - Added cross-tenant regression coverage.
 ```
@@ -394,6 +416,7 @@ If a secret was exposed:
 
 ```markdown
 ### Security
+
 - Rotated affected provider credentials.
 ```
 
@@ -409,6 +432,7 @@ Examples:
 
 ```markdown
 ### Deployment
+
 - Increased worker concurrency from 1 to 2.
 - Upgraded Hostinger VPS from KVM 2 to KVM 4.
 - Added Caddy request-size limits.

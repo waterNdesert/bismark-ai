@@ -1,4 +1,4 @@
-.PHONY: api-install api-dev api-test api-lint api-format-check api-typecheck web-install web-dev web-build web-lint web-typecheck
+.PHONY: api-install api-dev api-test api-lint api-format-check api-typecheck web-install web-dev web-build web-lint web-typecheck docker-build docker-up docker-down docker-logs docker-ps
 api-install:
 	cd apps/api && uv sync --locked
 api-dev:
@@ -21,3 +21,17 @@ web-lint:
 	pnpm --dir apps/web lint
 web-typecheck:
 	pnpm --dir apps/web typecheck
+docker-build:
+	docker compose -f infra/docker/compose.dev.yaml build
+
+docker-up:
+	docker compose -f infra/docker/compose.dev.yaml up --build -d
+
+docker-down:
+	docker compose -f infra/docker/compose.dev.yaml down
+
+docker-logs:
+	docker compose -f infra/docker/compose.dev.yaml logs -f
+
+docker-ps:
+	docker compose -f infra/docker/compose.dev.yaml ps

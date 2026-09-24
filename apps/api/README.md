@@ -15,6 +15,21 @@ uv run --locked ruff format --check .
 uv run --locked mypy app tests
 ```
 
+The backend can also be started through Docker Compose for the local Phase 0
+baseline:
+
+```sh
+cd ../..
+make docker-build
+make docker-up
+curl -i http://localhost:8000/health
+curl -i http://localhost:8000/ready
+make docker-down
+```
+
+The containerized Redis service is internal to Docker only and is not published to
+`localhost:6379`.
+
 GET /health returns {"status":"ok"}; GET /ready returns {"status":"ready"}.
 Readiness is process-only; no external dependencies are checked.
 

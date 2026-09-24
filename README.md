@@ -4,9 +4,10 @@ Bismark AI is a planned multi-tenant enterprise knowledge intelligence platform
 for answering questions against authorized organizational documents with grounded
 answers and traceable citations.
 
-**Current phase: Phase 0 — Repository Foundation.** Minimal Next.js and FastAPI
-application foundations exist. Product features, database integration, Docker,
-Redis and CI remain unimplemented. This is not a production-ready product.
+**Current phase: Phase 0 — local Docker and Redis baseline.** Minimal Next.js and
+FastAPI foundations exist, and the local Docker-based API + Redis workflow is now
+available for development. Product features, database integration, provider
+integration, CI and production deployment remain out of scope for this task.
 
 ## Intended stack
 
@@ -49,7 +50,17 @@ make api-install
 make web-install
 make api-dev    # http://127.0.0.1:8000
 make web-dev    # http://127.0.0.1:3000, in another terminal
+make docker-build
+make docker-up  # http://localhost:8000 and Redis inside Docker only
+make docker-down
+make docker-logs
+make docker-ps
 ```
+
+The frontend remains a local pnpm process. The API runs locally with uvicorn or
+via Docker Compose, while Redis is a container-internal dependency reachable as
+`redis:6379` from the API container. The API is reachable at
+`http://localhost:8000` when running through Docker.
 
 Stop development servers with Ctrl-C. Validation:
 
