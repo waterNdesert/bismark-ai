@@ -98,6 +98,7 @@ New or materially changed tests, evaluation suites, release gates, or QA process
 - SQLAlchemy, Alembic, and psycopg foundation for Supabase PostgreSQL.
 - Extension-only Alembic migration enabling pgvector.
 - Generic `/ready/database` health check and database developer commands.
+- Five-table multi-tenant schema foundation with tenant-safe workspace membership constraints.
 
 ## Deployment
 
@@ -105,6 +106,7 @@ New or materially changed tests, evaluation suites, release gates, or QA process
 - Completed Phase 0 repository foundation and developer-tooling validation.
 - Verified Supabase PostgreSQL connectivity, Alembic migration execution, and pgvector availability for Phase 1A.
 - Phase 1A intentionally contains no product schema, authentication, storage, RLS, or RAG implementation.
+- Phase 1B adds only profiles, organizations, organization_members, workspaces, and workspace_members; Auth flows and RLS remain deferred.
 
 - Initialized Git on `main` and committed the initial repository baseline.
 - Added Markdown-specific whitespace attributes to preserve existing hard breaks and test examples during Git checks.

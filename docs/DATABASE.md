@@ -123,6 +123,45 @@ This duplication is deliberate for secure and performant filtering.
 
 ---
 
+## Phase 1B Schema Foundation
+
+The initial multi-tenant schema foundation contains only:
+
+```text
+profiles
+organizations
+organization_members
+workspaces
+workspace_members
+```
+
+`profiles.id` references `auth.users.id` with cascade deletion. No Auth trigger
+is created in this phase; Supabase Auth remains authoritative for identities.
+
+Organizations and workspaces use UUID primary keys, nonblank names, normalized
+lowercase slug constraints, server-defaulted `timestamptz` timestamps, and
+nullable `deleted_at` fields for future soft-delete behavior. Organization slugs
+are globally unique; workspace slugs are unique within an organization.
+
+Organization membership roles are `owner`, `admin`, and `member`. Workspace
+membership roles are `admin` and `member`. Membership pairs are unique and
+indexed for user, tenant, role, and workspace lookups.
+
+`workspace_members` stores `organization_id` and uses composite foreign keys to
+`(workspace_id, organization_id)` and `(organization_id, user_id)`. This makes
+cross-organization workspace membership impossible at the database boundary and
+requires the user to already belong to the owning organization.
+
+`updated_at` uses application/ORM `onupdate=now()` behavior; no generic database
+trigger is introduced. An active organization must retain at least one owner;
+transactional enforcement belongs to the future organization service/RPC layer.
+
+RLS is not implemented yet. The schema supports future policies using
+`auth.uid()` membership checks across organization and workspace membership rows.
+Authentication flows, storage, documents, and all RAG tables remain deferred.
+
+---
+
 ## 5. Identity Boundary
 
 Supabase Auth owns authentication identities.

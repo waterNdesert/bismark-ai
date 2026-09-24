@@ -6,8 +6,8 @@ answers and traceable citations.
 
 **Current phase: Phase 1 — Supabase Foundation.** The repository foundation and
 local Docker/Redis workflow are complete. Supabase PostgreSQL connectivity,
-SQLAlchemy, Alembic, pgvector, and database readiness are now established. Product
-schema, authentication, storage, RLS, provider integrations, and production
+SQLAlchemy, Alembic, pgvector, database readiness, and the initial five-table
+tenant schema are now established. Authentication, storage, RLS, provider integrations, and production
 deployment remain out of scope.
 
 ## Intended stack

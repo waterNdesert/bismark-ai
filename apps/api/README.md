@@ -41,8 +41,10 @@ database details.
 
 Settings read process environment variables, including secret-typed Supabase and
 database settings. Database operations require `DATABASE_URL`; local database
-commands load the ignored repository `.env` for the child process. No product schema,
-authentication, storage, RLS, worker, or RAG implementation exists yet.
+commands load the ignored repository `.env` for the child process. The Phase 1B
+schema foundation contains only profiles, organizations, organization_members,
+workspaces, and workspace_members. Authentication, storage, RLS, worker, and RAG
+implementation remain deferred.
 
 The verified `DATABASE_URL` uses the Supabase Session Pooler connection mode,
 which supports the Phase 1A Alembic DDL migration. The URL remains local-only

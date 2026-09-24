@@ -2,9 +2,9 @@
 
 **Last updated:** 2026-09-24  
 **Current phase:** Phase 1 — Supabase Foundation
-**Current task:** Phase 1A complete; Phase 1B pending approval
-**Phase status:** Phase 1A COMPLETE
-**Overall status:** Supabase PostgreSQL connectivity, SQLAlchemy, Alembic, pgvector, database readiness, and GitHub CI are verified. Product schema and later Phase 1 work have not started.
+**Current task:** Phase 1B implemented; GitHub CI verification pending
+**Phase status:** Phase 1B IMPLEMENTED — local/live verification passed
+**Overall status:** Supabase PostgreSQL connectivity, SQLAlchemy, Alembic, pgvector, database readiness, and the five-table tenant schema are verified locally. GitHub CI is pending. Authentication and later Phase 1 work have not started.
 
 ## Documentation authority
 
@@ -106,7 +106,7 @@ and reranking; external generation through `LLMProvider`.
 | Embeddings / vector / FTS / fusion / reranking            | NOT STARTED                  | Specifications only.                                                                                                |
 | Conversations / chat / streaming / citations              | NOT STARTED                  | Specifications only.                                                                                                |
 | Feedback / audit / usage                                  | NOT STARTED                  | Specifications only.                                                                                                |
-| Tests / evaluations                                       | PARTIAL                      | 10 backend tests pass; frontend component tests and RAG evaluations are not implemented.                            |
+| Tests / evaluations                                       | PARTIAL                      | 20 backend tests pass; frontend component tests and RAG evaluations are not implemented.                            |
 | Docker / Compose / local infrastructure                   | COMPLETED (Phase 0 baseline) | FastAPI image and Redis service validated under `infra/docker/compose.dev.yaml`; Redis is not host-published.       |
 | CI / Vercel / Caddy / production deployment               | PARTIAL                      | GitHub Actions validation is complete; Vercel, Caddy and production deployment remain deferred.                     |
 | Production                                                | UNKNOWN externally           | No production deployment performed or verified from this workspace.                                                 |
@@ -222,11 +222,12 @@ Known tooling warnings/decisions:
 - Documentation and repository structure are present.
 
 Phase 1A local implementation, live verification, and GitHub CI have completed.
-CI run `35965440747` passed for commit `f11c866`. No product schema,
-authentication, RLS, storage, provider configuration, or production deployment
-has started.
+Phase 1B local implementation and live verification have completed; GitHub CI is
+pending for this change. The Phase 1B migration contains only the five tenant
+foundation tables. Authentication, RLS, storage, provider configuration, and
+production deployment have not started.
 Open parser, worker, model and citation-retention decisions remain unchanged.
 
 ## Recommended next task
 
-Design and implement the initial multi-tenant schema foundation.
+Phase 1B GitHub CI verification.

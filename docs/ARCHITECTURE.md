@@ -8,7 +8,8 @@
 
 ## Current implementation scope
 
-Phase 0 implements only a static Next.js page and FastAPI process health routes.
+Phase 1B implements the initial five-table tenant schema foundation in addition
+to the Phase 0 static Next.js page and FastAPI health routes.
 The API uses Python 3.12 and uv; the frontend uses Node.js 24 and pnpm 10.33.2.
 Each app owns its lockfile. A root Makefile coordinates development commands.
 
