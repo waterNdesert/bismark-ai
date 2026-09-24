@@ -2,9 +2,9 @@
 
 **Last updated:** 2026-09-24  
 **Current phase:** Phase 1 — Supabase Foundation
-**Current task:** Phase 1B implemented; GitHub CI verification pending
-**Phase status:** Phase 1B IMPLEMENTED — local/live verification passed
-**Overall status:** Supabase PostgreSQL connectivity, SQLAlchemy, Alembic, pgvector, database readiness, and the five-table tenant schema are verified locally. GitHub CI is pending. Authentication and later Phase 1 work have not started.
+**Current task:** Phase 1B complete; Phase 1C pending approval
+**Phase status:** Phase 1B COMPLETE
+**Overall status:** Supabase PostgreSQL connectivity, SQLAlchemy, Alembic, pgvector, database readiness, the five-table tenant schema, and GitHub CI are verified. Authentication and later Phase 1 work have not started.
 
 ## Documentation authority
 
@@ -221,13 +221,12 @@ Known tooling warnings/decisions:
   pull requests and pushes to `main`.
 - Documentation and repository structure are present.
 
-Phase 1A local implementation, live verification, and GitHub CI have completed.
-Phase 1B local implementation and live verification have completed; GitHub CI is
-pending for this change. The Phase 1B migration contains only the five tenant
-foundation tables. Authentication, RLS, storage, provider configuration, and
-production deployment have not started.
+Phase 1A and Phase 1B local implementation, live verification, and GitHub CI have
+completed. CI run `35966963645` passed for commit `7f905b2`. The Phase 1B
+migration contains only the five tenant foundation tables. Authentication, RLS,
+storage, provider configuration, and production deployment have not started.
 Open parser, worker, model and citation-retention decisions remain unchanged.
 
 ## Recommended next task
 
-Phase 1B GitHub CI verification.
+Phase 1C — Supabase Auth Integration.
