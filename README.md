@@ -4,10 +4,9 @@ Bismark AI is a planned multi-tenant enterprise knowledge intelligence platform
 for answering questions against authorized organizational documents with grounded
 answers and traceable citations.
 
-**Current phase: Phase 0 — Repository Foundation.** This repository contains
-architecture and planning documents plus an empty directory skeleton. It is not
-a runnable product: frontend, backend, dependencies, tests, and deployment
-configuration have not been implemented.
+**Current phase: Phase 0 — Repository Foundation.** Minimal Next.js and FastAPI
+application foundations exist. Product features, database integration, Docker,
+Redis and CI remain unimplemented. This is not a production-ready product.
 
 ## Intended stack
 
@@ -38,22 +37,45 @@ Parser, worker framework, and specific AI models remain open decisions.
 - [Changelog](CHANGELOG.md)
 - [Environment template](.env.example)
 
-## Repository layout
+## Development
 
-`apps/web` and `apps/api` reserve the application locations. `infra/docker` and
-`infra/caddy` reserve infrastructure configuration locations. `scripts`, `tests`,
-and `evals` reserve operational tooling, test suites, and evaluation assets.
-These directories currently contain only `.gitkeep` placeholders.
+Prerequisites: Node.js 24, pnpm 10.33.2, uv, Python 3.12 and Make.
+Python 3.12 is a conservative compatibility baseline for future parser/AI
+packages, which remain unselected. uv obtains one managed 3.12 runtime if needed.
+Dependencies are locked per app; no monorepo orchestrator is required.
 
-## Development status
+```sh
+make api-install
+make web-install
+make api-dev    # http://127.0.0.1:8000
+make web-dev    # http://127.0.0.1:3000, in another terminal
+```
 
-Follow [ROADMAP.md](ROADMAP.md) one phase at a time. Complete and verify Phase 0
-before beginning Phase 1. There are no install, run, or test commands configured
-yet. Git is initialized on `main`; no remote is configured.
+Stop development servers with Ctrl-C. Validation:
 
-The environment template contains placeholders and development examples, not
-production-ready configuration. Keep real credentials in ignored local files or
-a secret store. Never expose server-side credentials through `NEXT_PUBLIC_*`.
+```sh
+make api-test
+make api-lint
+make api-format-check
+make api-typecheck
+make web-lint
+make web-typecheck
+make web-build
+```
 
-Retrieval must enforce organization/workspace permissions inside both database
-search paths. Citations may refer only to evidence actually supplied to the LLM.
+See [API settings and commands](apps/api/README.md) and
+[frontend commands](apps/web/README.md). No provider credentials are needed.
+Backend settings read process environment variables; no dotenv file is loaded
+implicitly. The frontend currently consumes no environment variables.
+
+## Repository layout and status
+
+`apps/api` contains settings, health/readiness routes and tests. `apps/web` contains
+the minimal Next.js App Router page and Tailwind/tooling setup. Infrastructure,
+root scripts/tests and evaluation directories still contain placeholders; backend
+tests live in `apps/api/tests`.
+
+Follow [ROADMAP.md](ROADMAP.md) one phase at a time. Docker/Redis and CI remain
+Phase 0 work. Git uses main with no remote. The environment template describes
+planned settings as well as current ones; it is not a production configuration.
+Retrieval, authorization and citations remain documented requirements.

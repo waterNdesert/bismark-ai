@@ -8,6 +8,11 @@
 **Base Path:** `/api/v1`  
 **Audience:** Backend Engineering, Frontend Engineering, QA, Security, DevOps, and Agentic Coding Systems
 
+## Current implementation scope
+
+Only unversioned `/health` and `/ready` are implemented in Phase 0. Readiness
+checks process availability only; all domain routes below remain specifications.
+
 ---
 
 ## 1. Purpose

@@ -85,6 +85,11 @@ New or materially changed tests, evaluation suites, release gates, or QA process
 
 ## Added
 
+- FastAPI Phase 0 scaffold with typed settings, explicit CORS and health/readiness routes.
+- Minimal Next.js App Router, TypeScript and Tailwind frontend scaffold.
+- Backend tests, Ruff/mypy tooling, frontend lint/type/build checks and per-app lockfiles.
+- Root Makefile and application development instructions.
+
 - Initialized Git on `main` and committed the initial repository baseline.
 - Added Markdown-specific whitespace attributes to preserve existing hard breaks and test examples during Git checks.
 

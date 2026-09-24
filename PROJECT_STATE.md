@@ -1,10 +1,10 @@
 # PROJECT_STATE.md — Bismark AI
 
-**Last updated:** 2026-09-23  
+**Last updated:** 2026-09-24  
 **Current phase:** Phase 0 — Repository Foundation  
-**Current task:** Git initialization and repository baseline  
-**Task status:** COMPLETED — Git initialized and baseline committed  
-**Overall status:** Documentation and directory skeleton only; Phase 0 remains incomplete.
+**Current task:** Frontend and backend development foundations  
+**Task status:** COMPLETED — application foundation validation passed  
+**Overall status:** Minimal runnable applications and tooling; Phase 0 remains incomplete.
 
 ## Documentation authority
 
@@ -29,25 +29,24 @@ This file reports current state. It does not override architectural decisions.
 
 ## Verified repository state
 
-The initial read-only assessment found 22 Markdown documents and one environment
-example, with no application source or Git metadata. Repository normalization
-preserves those documents and adds the following foundation:
+Repository normalization and Git baseline are complete. The application foundation
+now includes:
 
-- Root `PRD.md` and `.env.example` use canonical filenames.
-- All nine accepted ADRs are under `docs/decisions/`.
-- README links the project documentation and states that no runnable product exists.
-- `.gitignore` protects environment secrets and generated/runtime artifacts.
-- `apps/web`, `apps/api`, `infra/docker`, `infra/caddy`, `scripts`, `tests`, and
-  `evals` contain only empty `.gitkeep` placeholders.
-- Documentation authority is reconciled with the explicitly approved order.
-- Retrieval documentation places authorization and SQL filters before both searches.
-- Conceptual worker networking separates private Redis access from outbound HTTPS.
-- Migration documentation places required extensions before dependent schema objects.
-- Parser and embedding dimension are unset in the environment template.
+- FastAPI under `apps/api` with typed environment settings, explicit CORS,
+  `/health` and process-only `/ready` routes. No provider credentials required.
+- Next.js App Router, TypeScript and Tailwind under `apps/web`, displaying only
+  the project name and Phase 0 status. No environment variables consumed yet.
+- Python 3.12.14 managed by uv (supported minor 3.12), per-app uv.lock.
+- Node.js 24, pnpm 10.33.2 and frontend pnpm-lock.yaml; no Node workspace.
+- Ruff, strict mypy, pytest, Next.js ESLint presets, TypeScript and build commands
+  exposed through the root Makefile and application READMEs.
+- Framework-generated web AGENTS.md/CLAUDE.md guidance retained because Next.js
+  recreates it during development startup.
 
-No application code, manifests, lockfiles, migrations, Supabase configuration,
-Dockerfiles, runnable Compose configuration, Caddyfile, or CI workflows exist.
-No dependencies were installed. Git is initialized on `main`, with no remote.
+No database, authentication, domain features, migrations, Redis integration,
+Dockerfiles, Compose, Caddy configuration, CI or deployment exists. Dependencies
+installed are limited to the current application/tooling foundation.
+Git remains on `main` with no remote.
 
 ## Completed version-control foundation
 
@@ -87,8 +86,8 @@ and reranking; external generation through `LLMProvider`.
 | Area | Status | Evidence |
 |---|---|---|
 | Documentation and repository skeleton | PARTIAL FOUNDATION | Paths normalized; applications and tooling absent. |
-| Frontend / backend | NOT STARTED | Empty application directories only. |
-| Dependency management / lint / formatting / type checking | NOT STARTED | No manifests, lockfiles, or tool configuration. |
+| Frontend / backend | PARTIAL | Minimal page and health routes validated; product features absent. |
+| Dependency management / lint / formatting / type checking | PARTIAL | App lockfiles and lint/type checks pass; Ruff formatting configured; frontend formatting automation pending. |
 | Database / migrations / Supabase | NOT STARTED | Specifications only; no connection or migration executed. |
 | Auth / organizations / workspaces / authorization | NOT STARTED | Specifications only. |
 | Documents / storage / ingestion | NOT STARTED | Specifications only. |
@@ -96,7 +95,7 @@ and reranking; external generation through `LLMProvider`.
 | Embeddings / vector / FTS / fusion / reranking | NOT STARTED | Specifications only. |
 | Conversations / chat / streaming / citations | NOT STARTED | Specifications only. |
 | Feedback / audit / usage | NOT STARTED | Specifications only. |
-| Tests / evaluations | NOT STARTED | Empty directories; no executable suites. |
+| Tests / evaluations | PARTIAL | 9 backend tests pass; frontend component tests and RAG evaluations not implemented. |
 | Docker / Caddy / Vercel integration / CI | NOT STARTED | Documentation only. |
 | Production | UNKNOWN externally | No deployment performed or verified from this workspace. |
 
@@ -112,7 +111,8 @@ and reranking; external generation through `LLMProvider`.
 - Source documents remain private in Supabase Storage; VPS files are temporary.
 - Privileged credentials remain server-side. Cross-tenant exposure blocks release.
 
-These are documented requirements, not implemented or tested controls.
+Domain authorization, tenant isolation and RAG remain documented requirements,
+not implemented or tested controls. Phase 0 CORS validation has negative tests.
 
 ## Open decisions
 
@@ -172,23 +172,43 @@ added; subsequent text searches may also match the validation record itself.
 Application tests, builds, lint, and type checks cannot run because no application
 or tooling is configured. No live infrastructure or provider checks are claimed.
 
+## Application foundation validation — 2026-09-24
+
+Passed:
+
+- `cd apps/api && uv run --locked python -c 'from app.main import app; print(app.title)'`: Bismark AI.
+- `cd apps/api && uv run ruff check .`: no errors.
+- `make api-format-check`: 10 files already formatted.
+- `cd apps/api && uv run mypy app tests`: no issues in 9 source files.
+- `cd apps/api && uv run pytest`: 9 passed, 1 dependency warning.
+- `make web-lint`: no errors or warnings.
+- `make web-typecheck`: Next.js type generation and TypeScript pass.
+- `NEXT_TELEMETRY_DISABLED=1 make web-build`: successful static production build.
+- Brief uvicorn and Next.js development boot checks: HTTP 200 from API /health
+  on loopback port 18000 and frontend / on loopback port 13000. Both stopped.
+
+Known tooling warnings/decisions:
+
+- TypeScript 7 was incompatible with the installed ESLint parser; pinned to 5.9.3.
+- ESLint 10 was incompatible with Next.js React lint plugins; retained ESLint 9.39.5,
+  which emits an install-time deprecation warning. Revisit when presets support 10.
+- Starlette warns that its TestClient httpx integration is deprecated; current
+  tests pass using the requested httpx dependency. No extra HTTP library added.
+- pnpm skipped unrs-resolver's install script; lint/type/build work without it.
+- shadcn/ui, frontend environment consumption and frontend formatting automation
+  are deferred. Settings currently read process environment, not dotenv files.
+
 ## Remaining Phase 0 work
 
-- Scaffold the Next.js frontend.
-- Scaffold the FastAPI backend.
-- Select runtime versions and reproducible dependency management.
-- Implement typed environment loading and validation.
-- Configure linting, formatting, and type checking.
-- Establish a test harness and initial tests.
-- Add the local Docker/Redis baseline.
-- Configure pull-request CI.
-- Verify frontend/backend/Redis startup and all Phase 0 exit criteria.
+- Local Docker/Redis development baseline.
+- Pull-request CI.
+- Frontend formatting automation.
+- Extend environment validation when frontend/infrastructure settings are consumed.
+- Verify remaining Phase 0 exit criteria, including Redis startup and PR CI.
 
-Phase 1 has not started. No Supabase initialization, migrations, or production
-operations were performed. Phase 0 remains incomplete.
+Phase 1 has not started. No provider configuration, migrations or deployments ran.
+Open parser, worker, model and citation-retention decisions remain unchanged.
 
 ## Recommended next task
 
-Scaffold the frontend and backend development foundations.
-
-This task has not started and requires approval.
+Local Docker and Redis development baseline. Await approval before beginning.

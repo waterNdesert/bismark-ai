@@ -34,3 +34,7 @@ htmlcov/
 *.log
 tmp/
 temp/
+
+# Generated TypeScript and Next.js declarations
+*.tsbuildinfo
+apps/web/next-env.d.ts

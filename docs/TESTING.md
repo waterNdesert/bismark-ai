@@ -6,6 +6,12 @@
 **Version:** 1.0  
 **Audience:** Backend Engineering, Frontend Engineering, QA, Security, AI/RAG Engineering, DevOps, and Agentic Coding Systems
 
+## Current implementation scope
+
+Phase 0 checks use pytest in `apps/api/tests`, Ruff and strict mypy. Frontend
+checks use Next.js ESLint presets, TypeScript and production builds. Commands
+are in the root Makefile. Frontend component/E2E tests and CI remain pending.
+
 ---
 
 ## 1. Purpose
