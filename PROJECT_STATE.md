@@ -2,9 +2,9 @@
 
 **Last updated:** 2026-09-24  
 **Current phase:** Phase 1 — Supabase Foundation
-**Current task:** Phase 1A implemented; GitHub CI verification pending
-**Phase status:** Phase 1A IMPLEMENTED — local live verification passed
-**Overall status:** Supabase PostgreSQL connectivity, SQLAlchemy, Alembic, pgvector, and database readiness are verified locally. GitHub CI is pending because no remote is configured. Product schema and later Phase 1 work have not started.
+**Current task:** Phase 1A complete; Phase 1B pending approval
+**Phase status:** Phase 1A COMPLETE
+**Overall status:** Supabase PostgreSQL connectivity, SQLAlchemy, Alembic, pgvector, database readiness, and GitHub CI are verified. Product schema and later Phase 1 work have not started.
 
 ## Documentation authority
 
@@ -221,8 +221,8 @@ Known tooling warnings/decisions:
   pull requests and pushes to `main`.
 - Documentation and repository structure are present.
 
-Phase 1A local implementation and live verification have completed. GitHub CI
-verification remains pending because no remote is configured. No product schema,
+Phase 1A local implementation, live verification, and GitHub CI have completed.
+CI run `35965440747` passed for commit `f11c866`. No product schema,
 authentication, RLS, storage, provider configuration, or production deployment
 has started.
 Open parser, worker, model and citation-retention decisions remain unchanged.
