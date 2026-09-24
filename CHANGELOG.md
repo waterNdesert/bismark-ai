@@ -92,10 +92,14 @@ New or materially changed tests, evaluation suites, release gates, or QA process
 - Local FastAPI Docker image for the Phase 0 development baseline on Python 3.12.
 - Local Redis service in the Docker Compose development stack for internal-only service access.
 - Docker Makefile commands for build, run, logs, status, and teardown using `infra/docker/compose.dev.yaml`.
+- GitHub Actions validation workflow for backend, frontend and Docker Compose configuration.
+- Frontend Prettier formatting automation with `format` and `format:check` scripts.
+- Unified `make check`, `make api-check`, `make web-check` and `make format-check` commands.
 
 ## Deployment
 
 - Validated the local API Docker image and Redis development service: API health/readiness returned HTTP 200, Redis returned `PONG`, Redis was not host-published, and teardown left no project containers running.
+- Completed Phase 0 repository foundation and developer-tooling validation.
 
 - Initialized Git on `main` and committed the initial repository baseline.
 - Added Markdown-specific whitespace attributes to preserve existing hard breaks and test examples during Git checks.

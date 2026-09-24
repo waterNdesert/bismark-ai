@@ -1,4 +1,4 @@
-.PHONY: api-install api-dev api-test api-lint api-format-check api-typecheck web-install web-dev web-build web-lint web-typecheck docker-build docker-up docker-down docker-logs docker-ps
+.PHONY: api-install api-dev api-test api-lint api-format-check api-typecheck api-check web-install web-dev web-build web-format web-format-check web-lint web-typecheck web-check check format-check docker-build docker-up docker-down docker-logs docker-ps
 api-install:
 	cd apps/api && uv sync --locked
 api-dev:
@@ -11,16 +11,24 @@ api-format-check:
 	cd apps/api && uv run --locked ruff format --check .
 api-typecheck:
 	cd apps/api && uv run --locked mypy app tests
+api-check: api-lint api-format-check api-typecheck api-test
 web-install:
 	pnpm --dir apps/web install --frozen-lockfile
 web-dev:
 	pnpm --dir apps/web dev --hostname 127.0.0.1
 web-build:
 	pnpm --dir apps/web build
+web-format:
+	pnpm --dir apps/web format
+web-format-check:
+	pnpm --dir apps/web format:check
 web-lint:
 	pnpm --dir apps/web lint
 web-typecheck:
 	pnpm --dir apps/web typecheck
+web-check: web-format-check web-lint web-typecheck web-build
+check: api-check web-check
+format-check: api-format-check web-format-check
 docker-build:
 	docker compose -f infra/docker/compose.dev.yaml build
 

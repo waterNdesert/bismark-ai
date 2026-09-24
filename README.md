@@ -4,10 +4,10 @@ Bismark AI is a planned multi-tenant enterprise knowledge intelligence platform
 for answering questions against authorized organizational documents with grounded
 answers and traceable citations.
 
-**Current phase: Phase 0 — local Docker and Redis baseline.** Minimal Next.js and
-FastAPI foundations exist, and the local Docker-based API + Redis workflow is now
-available for development. Product features, database integration, provider
-integration, CI and production deployment remain out of scope for this task.
+**Current phase: Phase 0 — Repository Foundation.** The Next.js and FastAPI
+foundations, local Docker/Redis workflow, and validation CI are complete. Product
+features, database integration, provider integration and production deployment
+remain out of scope until Phase 1 or later.
 
 ## Intended stack
 
@@ -65,14 +65,17 @@ via Docker Compose, while Redis is a container-internal dependency reachable as
 Stop development servers with Ctrl-C. Validation:
 
 ```sh
-make api-test
-make api-lint
-make api-format-check
-make api-typecheck
-make web-lint
-make web-typecheck
-make web-build
+make check
+make api-check
+make web-check
+make format-check
 ```
+
+`make check` runs the complete backend and frontend validation suite without
+starting Docker. Frontend formatting uses Prettier via `make web-format-check`;
+`make web-format` applies formatting. CI runs these checks on pull requests and
+pushes to `main`. Docker Compose syntax can be checked separately with
+`docker compose -f infra/docker/compose.dev.yaml config`.
 
 See [API settings and commands](apps/api/README.md) and
 [frontend commands](apps/web/README.md). No provider credentials are needed.
@@ -86,7 +89,8 @@ the minimal Next.js App Router page and Tailwind/tooling setup. Infrastructure,
 root scripts/tests and evaluation directories still contain placeholders; backend
 tests live in `apps/api/tests`.
 
-Follow [ROADMAP.md](ROADMAP.md) one phase at a time. Docker/Redis and CI remain
-Phase 0 work. Git uses main with no remote. The environment template describes
-planned settings as well as current ones; it is not a production configuration.
+Follow [ROADMAP.md](ROADMAP.md) one phase at a time. Phase 0 is complete and CI
+runs validation on pull requests and pushes to `main`. Git uses main with no
+remote. The environment template describes planned settings as well as current
+ones; it is not a production configuration.
 Retrieval, authorization and citations remain documented requirements.

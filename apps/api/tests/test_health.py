@@ -11,6 +11,10 @@ def test_app_imports() -> None:
     assert isinstance(app, FastAPI)
 
 
+def test_settings_default_environment() -> None:
+    assert Settings().app_env == "development"
+
+
 @pytest.mark.parametrize("path,status", [("/health", "ok"), ("/ready", "ready")])
 def test_health_routes(path: str, status: str) -> None:
     with TestClient(create_app(Settings())) as client:

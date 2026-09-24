@@ -189,6 +189,20 @@ fix(documents): prevent duplicate chunk activation on retry
 
 ---
 
+## Required Local Checks
+
+Before committing application or tooling changes, run:
+
+```sh
+make check
+docker compose -f infra/docker/compose.dev.yaml config
+```
+
+`make check` does not start Docker services. Run Docker runtime checks separately
+when changing the local Compose baseline.
+
+---
+
 ## 10. Do Not Rewrite Shared History
 
 Do not force-push shared branches without explicit agreement.

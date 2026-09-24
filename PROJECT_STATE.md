@@ -1,10 +1,10 @@
 # PROJECT_STATE.md — Bismark AI
 
 **Last updated:** 2026-09-24  
-**Current phase:** Phase 0 — local Docker and Redis baseline  
-**Current task:** Local API Docker image and Redis development service  
-**Task status:** COMPLETED — local API Docker and Redis runtime validation passed
-**Overall status:** Minimal runnable applications and tooling with a validated local Docker/Redis baseline; CI and remaining Phase 0 tooling remain incomplete.
+**Current phase:** Phase 0 — Repository Foundation
+**Current task:** Phase 0 complete; Phase 1 pending approval
+**Phase status:** COMPLETE
+**Overall status:** Repository foundation, local Docker/Redis baseline, and CI/tooling validation are complete. Phase 1 has not started.
 
 ## Documentation authority
 
@@ -40,6 +40,9 @@ now includes:
 - Node.js 24, pnpm 10.33.2 and frontend pnpm-lock.yaml; no Node workspace.
 - Ruff, strict mypy, pytest, Next.js ESLint presets, TypeScript and build commands
   exposed through the root Makefile and application READMEs.
+- Prettier frontend formatting with `format` and `format:check` scripts.
+- GitHub Actions validation for backend, frontend and Docker Compose configuration
+  on pull requests and pushes to `main`.
 - Framework-generated web AGENTS.md/CLAUDE.md guidance retained because Next.js
   recreates it during development startup.
 
@@ -48,7 +51,7 @@ The API image builds and starts as non-root `appuser`; `/health` and `/ready`
 return HTTP 200, Redis responds with `PONG`, Redis remains internal-only, and
 the stack tears down cleanly.
 No database, authentication, domain features, migrations, ingestion worker,
-Caddy production config, CI or deployment exists. Dependencies installed remain
+Caddy production config or production deployment exists. Dependencies installed remain
 limited to the current application/tooling foundation and local Docker service
 stack. Git remains on `main` with no remote.
 
@@ -91,7 +94,7 @@ and reranking; external generation through `LLMProvider`.
 | --------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | Documentation and repository skeleton                     | PARTIAL FOUNDATION           | Paths normalized; applications and tooling present.                                                           |
 | Frontend / backend                                        | PARTIAL                      | Minimal page and health routes validated; product features absent.                                            |
-| Dependency management / lint / formatting / type checking | PARTIAL                      | App lockfiles and lint/type checks pass; frontend formatting automation pending.                              |
+| Dependency management / lint / formatting / type checking | COMPLETE                     | Locked app dependencies, Ruff, mypy, Prettier, ESLint, TypeScript and builds pass locally; CI runs the same checks. |
 | Database / migrations / Supabase                          | NOT STARTED                  | Specifications only; no connection or migration executed.                                                     |
 | Auth / organizations / workspaces / authorization         | NOT STARTED                  | Specifications only.                                                                                          |
 | Documents / storage / ingestion                           | NOT STARTED                  | Specifications only.                                                                                          |
@@ -99,9 +102,9 @@ and reranking; external generation through `LLMProvider`.
 | Embeddings / vector / FTS / fusion / reranking            | NOT STARTED                  | Specifications only.                                                                                          |
 | Conversations / chat / streaming / citations              | NOT STARTED                  | Specifications only.                                                                                          |
 | Feedback / audit / usage                                  | NOT STARTED                  | Specifications only.                                                                                          |
-| Tests / evaluations                                       | PARTIAL                      | 9 backend tests pass; frontend component tests and RAG evaluations not implemented.                           |
+| Tests / evaluations                                       | PARTIAL                      | 10 backend tests pass; frontend component tests and RAG evaluations are not implemented.                      |
 | Docker / Compose / local infrastructure                   | COMPLETED (Phase 0 baseline) | FastAPI image and Redis service validated under `infra/docker/compose.dev.yaml`; Redis is not host-published. |
-| CI / Vercel / Caddy / production deployment               | NOT STARTED                  | Documentation only; production images/hosts not configured here.                                              |
+| CI / Vercel / Caddy / production deployment               | PARTIAL                      | GitHub Actions validation is complete; Vercel, Caddy and production deployment remain deferred.                |
 | Production                                                | UNKNOWN externally           | No production deployment performed or verified from this workspace.                                           |
 
 ## Security and RAG invariants
@@ -185,7 +188,7 @@ Passed:
 - `cd apps/api && uv run ruff check .`: no errors.
 - `make api-format-check`: 10 files already formatted.
 - `cd apps/api && uv run mypy app tests`: no issues in 9 source files.
-- `cd apps/api && uv run pytest`: 9 passed, 1 dependency warning.
+- `cd apps/api && uv run pytest`: 10 passed, 1 dependency warning.
 - `make web-lint`: no errors or warnings.
 - `make web-typecheck`: Next.js type generation and TypeScript pass.
 - `NEXT_TELEMETRY_DISABLED=1 make web-build`: successful static production build.
@@ -200,19 +203,28 @@ Known tooling warnings/decisions:
 - Starlette warns that its TestClient httpx integration is deprecated; current
   tests pass using the requested httpx dependency. No extra HTTP library added.
 - pnpm skipped unrs-resolver's install script; lint/type/build work without it.
-- shadcn/ui, frontend environment consumption and frontend formatting automation
-  are deferred. Settings currently read process environment, not dotenv files.
+- shadcn/ui and frontend environment consumption are deferred. Settings currently
+  read process environment, not dotenv files.
 
-## Remaining Phase 0 work
+## Phase 0 exit verification
 
-- Pull-request CI.
-- Frontend formatting automation.
-- Extend environment validation when frontend/infrastructure settings are consumed.
-- Final Phase 0 acceptance check for repo-wide developer tooling and local Docker validation.
+- Frontend and backend start locally.
+- Redis starts in the local Docker baseline.
+- Backend lint, formatting, type checking and tests pass.
+- Frontend formatting, lint, type checking and build pass.
+- Environment defaults and malformed origin validation are covered by tests.
+- GitHub Actions runs backend, frontend and Compose configuration validation on
+  pull requests and pushes to `main`.
+- Documentation and repository structure are present.
 
 Phase 1 has not started. No provider configuration, migrations or deployments ran.
 Open parser, worker, model and citation-retention decisions remain unchanged.
 
+## Next phase
+
+Phase 1 — Supabase Foundation.
+
 ## Recommended next task
 
-Phase 0 CI and final developer-tooling baseline.
+Establish Supabase project configuration, PostgreSQL connection, extensions, and
+migration foundation.

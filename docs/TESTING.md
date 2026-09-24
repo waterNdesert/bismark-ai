@@ -9,8 +9,9 @@
 ## Current implementation scope
 
 Phase 0 checks use pytest in `apps/api/tests`, Ruff and strict mypy. Frontend
-checks use Next.js ESLint presets, TypeScript and production builds. Commands
-are in the root Makefile. Frontend component/E2E tests and CI remain pending.
+checks use Prettier, Next.js ESLint presets, TypeScript and production builds.
+Commands are in the root Makefile and run in GitHub Actions on pull requests and
+pushes to `main`. Frontend component/E2E tests remain pending.
 
 ---
 

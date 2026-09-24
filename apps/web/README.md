@@ -5,6 +5,8 @@ Use Node.js 24 and pnpm 10.33.2. From this directory:
 ```sh
 pnpm install --frozen-lockfile
 pnpm dev --hostname 127.0.0.1
+pnpm format
+pnpm format:check
 pnpm lint
 pnpm typecheck
 pnpm build
