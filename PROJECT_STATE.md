@@ -87,22 +87,22 @@ and reranking; external generation through `LLMProvider`.
 
 ## Implementation inventory
 
-| Area                                                      | Status             | Evidence                                                                                                                                              |
-| --------------------------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Documentation and repository skeleton                     | PARTIAL FOUNDATION | Paths normalized; applications and tooling present.                                                                                                   |
-| Frontend / backend                                        | PARTIAL            | Minimal page and health routes validated; product features absent.                                                                                    |
-| Dependency management / lint / formatting / type checking | PARTIAL            | App lockfiles and lint/type checks pass; frontend formatting automation pending.                                                                      |
-| Database / migrations / Supabase                          | NOT STARTED        | Specifications only; no connection or migration executed.                                                                                             |
-| Auth / organizations / workspaces / authorization         | NOT STARTED        | Specifications only.                                                                                                                                  |
-| Documents / storage / ingestion                           | NOT STARTED        | Specifications only.                                                                                                                                  |
-| Redis / worker / parser / chunking                        | PARTIAL            | Redis local development baseline is validated in Docker; no worker implementation yet.                                                               |
-| Embeddings / vector / FTS / fusion / reranking            | NOT STARTED        | Specifications only.                                                                                                                                  |
-| Conversations / chat / streaming / citations              | NOT STARTED        | Specifications only.                                                                                                                                  |
-| Feedback / audit / usage                                  | NOT STARTED        | Specifications only.                                                                                                                                  |
-| Tests / evaluations                                       | PARTIAL            | 9 backend tests pass; frontend component tests and RAG evaluations not implemented.                                                                   |
-| Docker / Compose / local infrastructure                   | COMPLETED (Phase 0 baseline) | FastAPI image and Redis service validated under `infra/docker/compose.dev.yaml`; Redis is not host-published.                                     |
-| CI / Vercel / Caddy / production deployment               | NOT STARTED        | Documentation only; production images/hosts not configured here.                                                                                      |
-| Production                                                | UNKNOWN externally | No production deployment performed or verified from this workspace.                                                                                   |
+| Area                                                      | Status                       | Evidence                                                                                                      |
+| --------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Documentation and repository skeleton                     | PARTIAL FOUNDATION           | Paths normalized; applications and tooling present.                                                           |
+| Frontend / backend                                        | PARTIAL                      | Minimal page and health routes validated; product features absent.                                            |
+| Dependency management / lint / formatting / type checking | PARTIAL                      | App lockfiles and lint/type checks pass; frontend formatting automation pending.                              |
+| Database / migrations / Supabase                          | NOT STARTED                  | Specifications only; no connection or migration executed.                                                     |
+| Auth / organizations / workspaces / authorization         | NOT STARTED                  | Specifications only.                                                                                          |
+| Documents / storage / ingestion                           | NOT STARTED                  | Specifications only.                                                                                          |
+| Redis / worker / parser / chunking                        | PARTIAL                      | Redis local development baseline is validated in Docker; no worker implementation yet.                        |
+| Embeddings / vector / FTS / fusion / reranking            | NOT STARTED                  | Specifications only.                                                                                          |
+| Conversations / chat / streaming / citations              | NOT STARTED                  | Specifications only.                                                                                          |
+| Feedback / audit / usage                                  | NOT STARTED                  | Specifications only.                                                                                          |
+| Tests / evaluations                                       | PARTIAL                      | 9 backend tests pass; frontend component tests and RAG evaluations not implemented.                           |
+| Docker / Compose / local infrastructure                   | COMPLETED (Phase 0 baseline) | FastAPI image and Redis service validated under `infra/docker/compose.dev.yaml`; Redis is not host-published. |
+| CI / Vercel / Caddy / production deployment               | NOT STARTED                  | Documentation only; production images/hosts not configured here.                                              |
+| Production                                                | UNKNOWN externally           | No production deployment performed or verified from this workspace.                                           |
 
 ## Security and RAG invariants
 
