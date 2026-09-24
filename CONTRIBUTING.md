@@ -582,17 +582,17 @@ Update relevant documentation when behavior changes.
 
 Examples:
 
-| Change | Document |
-|---|---|
-| Architecture | `ARCHITECTURE.md` |
-| Schema | `DATABASE.md` |
-| Endpoint | `API.md` |
-| Retrieval | `RAG.md` |
-| Security | `SECURITY.md` |
-| Deployment | `DEPLOYMENT.md` |
-| Tests | `TESTING.md` |
-| Delivery phase | `ROADMAP.md` |
-| Meaningful completed change | `CHANGELOG.md` |
+| Change                      | Document          |
+| --------------------------- | ----------------- |
+| Architecture                | `ARCHITECTURE.md` |
+| Schema                      | `DATABASE.md`     |
+| Endpoint                    | `API.md`          |
+| Retrieval                   | `RAG.md`          |
+| Security                    | `SECURITY.md`     |
+| Deployment                  | `DEPLOYMENT.md`   |
+| Tests                       | `TESTING.md`      |
+| Delivery phase              | `ROADMAP.md`      |
+| Meaningful completed change | `CHANGELOG.md`    |
 
 ---
 
@@ -612,30 +612,39 @@ Recommended:
 
 ```markdown
 ## Summary
+
 What changed?
 
 ## Why
+
 Why is this needed?
 
 ## Scope
+
 What is intentionally included/excluded?
 
 ## Security Impact
+
 Does this affect authentication, authorization, tenancy, storage, or retrieval?
 
 ## Database Impact
+
 Migration required? Yes/No
 
 ## RAG Impact
+
 Does this affect parsing, chunking, embeddings, retrieval, reranking, context, or citations?
 
 ## Tests
+
 What was run?
 
 ## Documentation
+
 Which docs were updated?
 
 ## Deployment Notes
+
 Any operator action required?
 ```
 

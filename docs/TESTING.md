@@ -526,13 +526,13 @@ Frontend should handle expired session by:
 
 At minimum test:
 
-| Action | Owner | Admin | Member |
-|---|---:|---:|---:|
-| Read organization | Yes | Yes | Yes |
-| Update organization | Yes | Yes | No |
-| Manage members | Yes | Policy-dependent | No |
-| Delete organization | Yes | No | No |
-| Create workspace | Yes | Yes | No/Policy |
+| Action              | Owner |            Admin |    Member |
+| ------------------- | ----: | ---------------: | --------: |
+| Read organization   |   Yes |              Yes |       Yes |
+| Update organization |   Yes |              Yes |        No |
+| Manage members      |   Yes | Policy-dependent |        No |
+| Delete organization |   Yes |               No |        No |
+| Create workspace    |   Yes |              Yes | No/Policy |
 
 Final matrix must match product policy.
 
@@ -1226,7 +1226,9 @@ Expected:
 Use document/chat content containing:
 
 ```html
-<script>alert(1)</script>
+<script>
+  alert(1);
+</script>
 ```
 
 Verify frontend sanitization.
