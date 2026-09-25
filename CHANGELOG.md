@@ -16,6 +16,22 @@ The format is inspired by **Keep a Changelog** and uses semantic-style version s
 
 ---
 
+## Phase 1C — 2026-09-25 (complete, unreleased)
+
+- Added Supabase signup/login/logout, session refresh, email confirmation handling,
+  password reset/recovery and an account screen.
+- Added independently verified bearer identity and GET/POST `/api/v1/me` with
+  identity-scoped, idempotent profile initialization and safe error responses.
+- Added auth negative tests and mocked browser flow tests to CI.
+- Live signup, confirmation email/redirect, authenticated session and profile
+  view verified manually by the user.
+- Closeout: 51 backend tests, 9 browser tests, full checks and whitespace checks
+  passed. Browser coverage includes reload persistence, persistent logout,
+  recoverable invalid login and mocked password recovery/update.
+- Isolated browser test output from the running development server and corrected
+  auth test selectors. No schema changes or production deployment.
+- Phase 1D, RLS and tenant authorization remain unstarted.
+
 ## How to Use This File
 
 Add meaningful changes under:

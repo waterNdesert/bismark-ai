@@ -1,10 +1,10 @@
 # PROJECT_STATE.md — Bismark AI
 
-**Last updated:** 2026-09-24  
+**Last updated:** 2026-09-25  
 **Current phase:** Phase 1 — Supabase Foundation
-**Current task:** Phase 1B complete; Phase 1C pending approval
-**Phase status:** Phase 1B COMPLETE
-**Overall status:** Supabase PostgreSQL connectivity, SQLAlchemy, Alembic, pgvector, database readiness, the five-table tenant schema, and GitHub CI are verified. Authentication and later Phase 1 work have not started.
+**Current task:** Phase 1C — Supabase Auth Integration
+**Phase status:** Phase 1C COMPLETE
+**Overall status:** Supabase PostgreSQL connectivity, SQLAlchemy, Alembic, pgvector, database readiness, the five-table tenant schema, and GitHub CI are verified. Phase 1C authentication is verified locally and through user-reported live Supabase acceptance. Later Phase 1 work has not started.
 
 ## Documentation authority
 
@@ -32,10 +32,11 @@ This file reports current state. It does not override architectural decisions.
 Repository normalization and Git baseline are complete. The application foundation
 now includes:
 
-- FastAPI under `apps/api` with typed environment settings, explicit CORS,
-  `/health` and process-only `/ready` routes. No provider credentials required.
-- Next.js App Router, TypeScript and Tailwind under `apps/web`, displaying only
-  the project name and Phase 0 status. No environment variables consumed yet.
+- FastAPI under `apps/api` with typed settings, explicit CORS, process/database
+  health routes and verified GET/POST `/api/v1/me`. Health needs no auth credentials;
+  profile operations require Supabase public configuration and a database connection.
+- Next.js account screen with Supabase signup/login/logout, refresh, email-link
+  confirmation, password recovery, and backend-verified profile display.
 - Python 3.12.14 managed by uv (supported minor 3.12), per-app uv.lock.
 - Node.js 24, pnpm 10.33.2 and frontend pnpm-lock.yaml; no Node workspace.
 - Ruff, strict mypy, pytest, Next.js ESLint presets, TypeScript and build commands
@@ -54,10 +55,11 @@ return HTTP 200, Redis responds with `PONG`, Redis remains internal-only, and
 the stack tears down cleanly.
 Supabase PostgreSQL connectivity via the Session Pooler and the extension-only
 migration are verified.
-No product schema, authentication, domain features, ingestion worker, RLS,
-storage, Caddy production config or production deployment exists. Dependencies installed remain
+The five-table tenant schema and account/profile authentication foundation exist.
+No tenant management endpoints, ingestion worker, RLS, storage, Caddy production
+config or production deployment exists. Dependencies installed remain
 limited to the current application/tooling foundation and local Docker service
-stack. Git remains on `main` with no remote.
+stack. Work remains on `main`; earlier tasks recorded GitHub CI verification.
 
 ## Completed version-control foundation
 
@@ -100,13 +102,13 @@ and reranking; external generation through `LLMProvider`.
 | Frontend / backend                                        | PARTIAL                      | Minimal page and health routes validated; product features absent.                                                  |
 | Dependency management / lint / formatting / type checking | COMPLETE                     | Locked app dependencies, Ruff, mypy, Prettier, ESLint, TypeScript and builds pass locally; CI runs the same checks. |
 | Database / migrations / Supabase                          | COMPLETE (Phase 1A)          | Supabase PostgreSQL connection verified; SQLAlchemy/Alembic foundation and vector extension migration applied.      |
-| Auth / organizations / workspaces / authorization         | NOT STARTED                  | Specifications only.                                                                                                |
+| Auth / organizations / workspaces / authorization         | PARTIAL                      | Auth/profile integration implemented locally; tenant authorization and management remain absent.                                                                                                |
 | Documents / storage / ingestion                           | NOT STARTED                  | Specifications only.                                                                                                |
 | Redis / worker / parser / chunking                        | PARTIAL                      | Redis local development baseline is validated in Docker; no worker implementation yet.                              |
 | Embeddings / vector / FTS / fusion / reranking            | NOT STARTED                  | Specifications only.                                                                                                |
 | Conversations / chat / streaming / citations              | NOT STARTED                  | Specifications only.                                                                                                |
 | Feedback / audit / usage                                  | NOT STARTED                  | Specifications only.                                                                                                |
-| Tests / evaluations                                       | PARTIAL                      | 20 backend tests pass; frontend component tests and RAG evaluations are not implemented.                            |
+| Tests / evaluations                                       | PARTIAL                      | 51 backend tests and 9 browser auth tests pass; RAG evaluation absent.                            |
 | Docker / Compose / local infrastructure                   | COMPLETED (Phase 0 baseline) | FastAPI image and Redis service validated under `infra/docker/compose.dev.yaml`; Redis is not host-published.       |
 | CI / Vercel / Caddy / production deployment               | PARTIAL                      | GitHub Actions validation is complete; Vercel, Caddy and production deployment remain deferred.                     |
 | Production                                                | UNKNOWN externally           | No production deployment performed or verified from this workspace.                                                 |
@@ -123,8 +125,8 @@ and reranking; external generation through `LLMProvider`.
 - Source documents remain private in Supabase Storage; VPS files are temporary.
 - Privileged credentials remain server-side. Cross-tenant exposure blocks release.
 
-Domain authorization, tenant isolation and RAG remain documented requirements,
-not implemented or tested controls. Phase 0 CORS validation has negative tests.
+Domain authorization and RAG remain incomplete. Phase 1C tests verified-principal
+profile scoping and CORS denial; this does not establish full tenant isolation.
 
 ## Open decisions
 
@@ -223,10 +225,39 @@ Known tooling warnings/decisions:
 
 Phase 1A and Phase 1B local implementation, live verification, and GitHub CI have
 completed. CI run `35966963645` passed for commit `7f905b2`. The Phase 1B
-migration contains only the five tenant foundation tables. Authentication, RLS,
-storage, provider configuration, and production deployment have not started.
+migration contains only the five tenant foundation tables. Phase 1C authentication
+is now implemented locally. RLS, storage and production deployment remain pending.
 Open parser, worker, model and citation-retention decisions remain unchanged.
 
-## Recommended next task
+## Phase 1C implementation — 2026-09-25
 
-Phase 1C — Supabase Auth Integration.
+- Browser Supabase SDK handles email/password signup, login, confirmation,
+  password reset/recovery, refresh and local-session logout.
+- FastAPI verifies bearer tokens online against the configured Supabase Auth
+  server; no custom signature decoder or service-role key is used.
+- GET `/api/v1/me` reads only the verified user's profile. POST initializes that
+  profile idempotently without granting memberships or overwriting existing data.
+- No migrations added or applied and no production deployment performed.
+- User confirmed live signup, Supabase confirmation email delivery, redirect to
+  localhost, session establishment, profile loading and displayed signed-in email.
+- Automated results: `make api-test` (51 passed), `make web-test` (9 passed),
+  `make check` and `git diff --check` passed.
+- Browser tests confirm session persistence after reload, logout persistence
+  after reload, generic incorrect-password errors followed by successful retry,
+  refresh, profile initialization and rejection of invalid API sessions.
+- Password recovery request, recovery-link handling, token removal from the URL
+  and password-update submission pass with mocked Supabase responses. Live reset
+  email delivery/password change was not reported as manually verified.
+- Browser failures were test-selector/URL assertions and a conflict with the
+  running development server. Tests now use an isolated `.next-e2e` directory.
+- Ruff normalized the three existing formatting-only Python edits; migration
+  and model behavior is unchanged. No new broad documentation edits in closeout.
+- Local credential-value/private-key scan passed; `.env` and
+  `apps/web/.env.local` are ignored and excluded from commits.
+- Implementation and closeout are committed separately; GitHub Actions status
+  will be verified for the pushed closeout commit.
+- Simple manual steps: [Auth test guide](docs/AUTH_TESTING.md).
+
+## Stop boundary
+
+Phase 1C is complete. Phase 1D, RLS and tenant authorization have not started.
