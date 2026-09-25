@@ -8,6 +8,33 @@
 
 ---
 
+## Phase 1C implementation boundary
+
+FastAPI verifies each bearer token with the configured HTTPS Supabase Auth
+`GET /auth/v1/user` endpoint, using the public anon key. It does not trust decoded
+client claims and never uses the service-role key for user verification. The
+adapter has a five-second HTTP timeout, follows no redirects, and accepts only
+non-anonymous `authenticated` user responses with a UUID and email. Provider
+failure fails closed. Verification is behind an application-owned `AuthVerifier`.
+
+The browser uses Supabase's supported session persistence/refresh and implicit
+email-link flow. Tokens live in SDK-managed browser storage, not custom cookies;
+no authenticated SSR is implemented. Backend requests carry a bearer token, not
+cookies. Email confirmation follows the Supabase project's Auth settings. Signout
+uses local session scope; already-issued access tokens may remain valid until
+expiry, consistent with Supabase. Do not claim instant access-token revocation.
+Errors do not echo tokens, provider response bodies or database exceptions.
+
+Profile reads/inserts always use the verified principal ID. This establishes
+identity only: organization/workspace policies, RLS, rate limiting and full
+production session hardening remain incomplete. In particular, do not expose
+private tenant data through the Supabase Data API before RLS/grants are verified.
+No public release is approved by this phase.
+
+Provider references: [verified user lookup](https://supabase.com/docs/reference/javascript/auth-getuser),
+[password flows](https://supabase.com/docs/guides/auth/passwords), and
+[signout limitations](https://supabase.com/docs/reference/javascript/auth-signout).
+
 ## 1. Purpose
 
 This document defines the security model for Bismark AI V1.

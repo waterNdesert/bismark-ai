@@ -43,9 +43,22 @@ Settings read process environment variables, including secret-typed Supabase and
 database settings. Database operations require `DATABASE_URL`; local database
 commands load the ignored repository `.env` for the child process. The Phase 1B
 schema foundation contains only profiles, organizations, organization_members,
-workspaces, and workspace_members. Authentication, storage, RLS, worker, and RAG
-implementation remain deferred.
+workspaces, and workspace_members. Authentication and profile bootstrap are implemented. Storage, RLS, worker,
+tenant authorization and RAG remain deferred.
 
 The verified `DATABASE_URL` uses the Supabase Session Pooler connection mode,
 which supports the Phase 1A Alembic DDL migration. The URL remains local-only
 and is never committed or logged.
+
+## Authentication development
+
+Set `SUPABASE_URL` (HTTPS project origin), `SUPABASE_ANON_KEY` (public key),
+and `DATABASE_URL` in the ignored root `.env`. Start from the repository root
+with `make api-dev-env`. Use `CORS_ORIGINS` matching the actual browser origin.
+`make api-dev` still starts without loading a dotenv file. Health routes work
+without auth credentials; authenticated routes fail closed with 503 when missing.
+
+GET `/api/v1/me` reads the verified user's profile. POST `/api/v1/me` initializes
+it idempotently. Both require a Supabase access token; no supplied user ID is
+trusted. No service-role key or local JWT signing secret is needed. Read the
+implemented contract in `docs/API.md` and security limits in `docs/SECURITY.md`.

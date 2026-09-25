@@ -8,8 +8,11 @@
 
 ## Current implementation scope
 
-Phase 1B implements the initial five-table tenant schema foundation in addition
-to the Phase 0 static Next.js page and FastAPI health routes.
+Phase 1C adds browser-managed Supabase authentication and FastAPI-verified
+current-user profile reads/initialization to the five-table tenant foundation.
+The browser SDK owns signup/login/recovery/refresh/logout; FastAPI uses the
+application-owned AuthVerifier interface with an online Supabase Auth adapter.
+No authenticated SSR, tenant management, storage or RAG is implemented.
 The API uses Python 3.12 and uv; the frontend uses Node.js 24 and pnpm 10.33.2.
 Each app owns its lockfile. A root Makefile coordinates development commands.
 

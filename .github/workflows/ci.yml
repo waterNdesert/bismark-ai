@@ -85,6 +85,12 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Install test browser
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Authentication browser tests
+        run: pnpm test:e2e
+
   compose-config:
     name: Docker Compose config
     runs-on: ubuntu-latest

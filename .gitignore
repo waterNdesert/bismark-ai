@@ -38,3 +38,9 @@ temp/
 # Generated TypeScript and Next.js declarations
 *.tsbuildinfo
 apps/web/next-env.d.ts
+
+# Browser test artifacts
+playwright-report/
+test-results/
+
+.next-e2e/

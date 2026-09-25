@@ -158,7 +158,11 @@ transactional enforcement belongs to the future organization service/RPC layer.
 
 RLS is not implemented yet. The schema supports future policies using
 `auth.uid()` membership checks across organization and workspace membership rows.
-Authentication flows, storage, documents, and all RAG tables remain deferred.
+Phase 1C adds profile initialization through authenticated POST `/api/v1/me`,
+using `INSERT ... ON CONFLICT (id) DO NOTHING`. The ID is exclusively the verified
+Supabase user ID; existing profile fields are retained and memberships are never
+created implicitly. No migration or Auth trigger is added. Storage, documents,
+RLS and all RAG tables remain deferred.
 
 ---
 

@@ -10,8 +10,26 @@
 
 ## Current implementation scope
 
-Only unversioned `/health` and `/ready` are implemented in Phase 0. Readiness
-checks process availability only; all domain routes below remain specifications.
+Implemented: `/health`, `/ready` (process), `/ready/database` (database), and
+GET/POST `/api/v1/me`. Other routes below remain target contracts.
+
+Phase 1C GET `/api/v1/me` returns only `{id, email, display_name}` from the
+verified identity and existing profile. Missing profiles return 404
+`PROFILE_NOT_FOUND`. POST `/api/v1/me` initializes the verified user's profile
+idempotently and returns the same response with HTTP 200. It accepts no identity
+or profile fields; supplied bodies/IDs cannot choose another user. Existing names
+are preserved. No membership is created. The browser calls POST only after GET
+returns 404. Future avatar/timezone/locale/organization fields below are not yet
+implemented and are not synthesized.
+
+Both routes require `Authorization: Bearer <access_token>` and return
+`Cache-Control: no-store`. Auth errors use the standard error envelope and
+`X-Request-ID`: 401 `AUTHENTICATION_REQUIRED` for missing credentials, 401
+`TOKEN_INVALID` for invalid/expired credentials, 503 `AUTH_UNAVAILABLE` for
+provider failure/unconfigured auth, and 503 `DATABASE_UNAVAILABLE` for profile
+storage failure. Supabase does not reliably distinguish expired tokens in this
+adapter, so `TOKEN_EXPIRED` remains reserved. 401 includes `WWW-Authenticate`.
+Health endpoints retain their existing response format.
 
 ---
 

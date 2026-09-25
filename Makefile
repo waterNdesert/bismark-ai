@@ -51,3 +51,9 @@ docker-logs:
 
 docker-ps:
 	docker compose -f infra/docker/compose.dev.yaml ps
+
+.PHONY: api-dev-env web-test
+api-dev-env:
+	cd apps/api && uv run --locked python ../../scripts/run_with_env.py ../../.env uvicorn app.main:app --reload --host 127.0.0.1
+web-test:
+	pnpm --dir apps/web test:e2e

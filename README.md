@@ -7,8 +7,9 @@ answers and traceable citations.
 **Current phase: Phase 1 — Supabase Foundation.** The repository foundation and
 local Docker/Redis workflow are complete. Supabase PostgreSQL connectivity,
 SQLAlchemy, Alembic, pgvector, database readiness, and the initial five-table
-tenant schema are now established. Authentication, storage, RLS, provider integrations, and production
-deployment remain out of scope.
+tenant schema are established. Phase 1C adds Supabase account access and verified
+profile initialization. Storage, RLS, tenant authorization, AI providers and
+production deployment remain incomplete.
 
 ## Intended stack
 
@@ -86,12 +87,14 @@ See [API settings and commands](apps/api/README.md) and
 [frontend commands](apps/web/README.md). No provider credentials are needed.
 Backend settings read process environment variables. Database Makefile commands
 load the ignored local `.env` only for their child process; credentials are never
-printed or committed. The frontend currently consumes no environment variables.
+printed or committed. For authentication, configure the public frontend variables in
+`apps/web/.env.local` and use `make api-dev-env` for the backend. See the app
+READMEs for Supabase redirect/email configuration and `make web-test`.
 
 ## Repository layout and status
 
 `apps/api` contains settings, health/readiness routes and tests. `apps/web` contains
-the minimal Next.js App Router page and Tailwind/tooling setup. Infrastructure,
+the account-access page and Tailwind/tooling setup. Infrastructure,
 root scripts/tests and evaluation directories still contain placeholders; backend
 tests live in `apps/api/tests`.
 

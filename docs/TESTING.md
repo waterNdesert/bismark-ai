@@ -11,7 +11,18 @@
 Phase 0 checks use pytest in `apps/api/tests`, Ruff and strict mypy. Frontend
 checks use Prettier, Next.js ESLint presets, TypeScript and production builds.
 Commands are in the root Makefile and run in GitHub Actions on pull requests and
-pushes to `main`. Frontend component/E2E tests remain pending.
+pushes to `main`. Phase 1C adds pytest coverage for provider denial/outage,
+malformed/non-user responses, auth headers, profile ownership and CORS.
+Playwright (`make web-test`) exercises signup confirmation, login persistence,
+logout, password reset/recovery, rejected sessions and mobile layout using mocked
+Supabase/API responses. CI installs Chromium and runs these tests.
+
+These checks do not verify live email delivery, actual project Auth configuration,
+real token expiry/signature enforcement or PostgreSQL profile persistence. Before
+accepting Phase 1C against a live development project, use two test accounts:
+confirm email, sign in, reload, initialize/read each profile, verify distinct IDs,
+reset a password, sign out, and verify invalid/expired tokens return 401. Do not
+log tokens or passwords. RLS and tenant authorization need their own later tests.
 
 ---
 
@@ -615,7 +626,7 @@ Test filenames containing:
 
 ```text
 ../
-..\ 
+..\
 null byte representations
 very long names
 Unicode oddities

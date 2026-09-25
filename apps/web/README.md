@@ -13,14 +13,40 @@ pnpm build
 pnpm start --hostname 127.0.0.1
 ```
 
-The App Router root page displays only the project name and Phase 0 status.
-Type checking generates Next.js types before running TypeScript. Tailwind uses
-PostCSS and ESLint uses Next.js presets. No environment variables are required
-or consumed yet. NEXT_PUBLIC_APP_URL and NEXT_PUBLIC_API_URL in the root template
-are reserved for future integration; never expose backend credentials.
+The root page provides signup, login, logout, email confirmation handling,
+password reset/recovery, and a backend-verified account view. Supabase manages
+browser session persistence and refresh; FastAPI owns profile data. Product
+workspaces, chat and shadcn/ui components remain deferred.
 
-Supabase, authentication, chat, shadcn/ui components and product pages are deferred.
-Dependencies are locked here; no Node workspace wraps the Python backend.
+Create ignored `apps/web/.env.local` with only:
+
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-public-anon-key
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+Never put a service-role key, database URL or signing secret here. These values
+are build-time browser configuration. Restart Next.js after changing them. The
+API accepts HTTPS origins or loopback HTTP for development. Without configuration,
+the page shows a disabled account form; builds still work.
+
+In Supabase Auth, enable email/password and configure Site URL and allowed redirect
+URLs for your actual frontend origin (for example `http://localhost:3000`).
+Signup confirmation and reset links return to that origin. Use the same hostname
+throughout; `localhost` and `127.0.0.1` are different origins. Configure email
+confirmation and email delivery/SMTP in Supabase before live acceptance testing.
+
+Browser regression tests use fake credentials and intercepted services:
+
+```sh
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
+
+The runner starts its own Next.js development server on port 3100. Tests do not
+contact a real Supabase project. Type checking, formatting, lint and build remain
+available through the commands above. Dependencies are locked per app.
 
 Compatibility notes: TypeScript is pinned to 5.9 because the current ESLint parser
 does not support 7. ESLint 9 is retained because Next.js React plugins fail with
