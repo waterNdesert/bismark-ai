@@ -1,10 +1,10 @@
 # PROJECT_STATE.md — Bismark AI
 
-**Last updated:** 2026-09-25  
+**Last updated:** 2026-09-26  
 **Current phase:** Phase 1 — Supabase Foundation
-**Current task:** Phase 1C — Supabase Auth Integration
-**Phase status:** Phase 1C COMPLETE
-**Overall status:** Supabase PostgreSQL connectivity, SQLAlchemy, Alembic, pgvector, database readiness, the five-table tenant schema, and GitHub CI are verified. Phase 1C authentication is verified locally and through user-reported live Supabase acceptance. Later Phase 1 work has not started.
+**Current task:** Phase 1D closeout validation
+**Phase status:** IMPLEMENTATION COMPLETE; CLOSEOUT BLOCKED
+**Overall status:** Phase 1D application-layer organization/workspace authorization and tenancy RLS are implemented, with 20/20 live isolation checks passed. `make check` is blocked by Ruff findings in the Phase 1D migration and RLS test. The next phase has not started.
 
 ## Documentation authority
 
@@ -56,8 +56,9 @@ the stack tears down cleanly.
 Supabase PostgreSQL connectivity via the Session Pooler and the extension-only
 migration are verified.
 The five-table tenant schema and account/profile authentication foundation exist.
-No tenant management endpoints, ingestion worker, RLS, storage, Caddy production
-config or production deployment exists. Dependencies installed remain
+Organization/workspace authorization helpers are implemented and RLS is enabled
+on the five tenancy tables. No tenant management endpoints, ingestion worker,
+storage, Caddy production config or production deployment exists. Dependencies installed remain
 limited to the current application/tooling foundation and local Docker service
 stack. Work remains on `main`; earlier tasks recorded GitHub CI verification.
 
@@ -96,22 +97,22 @@ and reranking; external generation through `LLMProvider`.
 
 ## Implementation inventory
 
-| Area                                                      | Status                       | Evidence                                                                                                            |
-| --------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Documentation and repository skeleton                     | PARTIAL FOUNDATION           | Paths normalized; applications and tooling present.                                                                 |
-| Frontend / backend                                        | PARTIAL                      | Minimal page and health routes validated; product features absent.                                                  |
-| Dependency management / lint / formatting / type checking | COMPLETE                     | Locked app dependencies, Ruff, mypy, Prettier, ESLint, TypeScript and builds pass locally; CI runs the same checks. |
-| Database / migrations / Supabase                          | COMPLETE (Phase 1A)          | Supabase PostgreSQL connection verified; SQLAlchemy/Alembic foundation and vector extension migration applied.      |
-| Auth / organizations / workspaces / authorization         | PARTIAL                      | Auth/profile integration implemented locally; tenant authorization and management remain absent.                                                                                                |
-| Documents / storage / ingestion                           | NOT STARTED                  | Specifications only.                                                                                                |
-| Redis / worker / parser / chunking                        | PARTIAL                      | Redis local development baseline is validated in Docker; no worker implementation yet.                              |
-| Embeddings / vector / FTS / fusion / reranking            | NOT STARTED                  | Specifications only.                                                                                                |
-| Conversations / chat / streaming / citations              | NOT STARTED                  | Specifications only.                                                                                                |
-| Feedback / audit / usage                                  | NOT STARTED                  | Specifications only.                                                                                                |
-| Tests / evaluations                                       | PARTIAL                      | 51 backend tests and 9 browser auth tests pass; RAG evaluation absent.                            |
-| Docker / Compose / local infrastructure                   | COMPLETED (Phase 0 baseline) | FastAPI image and Redis service validated under `infra/docker/compose.dev.yaml`; Redis is not host-published.       |
-| CI / Vercel / Caddy / production deployment               | PARTIAL                      | GitHub Actions validation is complete; Vercel, Caddy and production deployment remain deferred.                     |
-| Production                                                | UNKNOWN externally           | No production deployment performed or verified from this workspace.                                                 |
+| Area                                                      | Status                       | Evidence                                                                                                                                          |
+| --------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Documentation and repository skeleton                     | PARTIAL FOUNDATION           | Paths normalized; applications and tooling present.                                                                                               |
+| Frontend / backend                                        | PARTIAL                      | Minimal page and health routes validated; product features absent.                                                                                |
+| Dependency management / lint / formatting / type checking | COMPLETE                     | Locked app dependencies, Ruff, mypy, Prettier, ESLint, TypeScript and builds pass locally; CI runs the same checks.                               |
+| Database / migrations / Supabase                          | COMPLETE (Phase 1A)          | Supabase PostgreSQL connection verified; SQLAlchemy/Alembic foundation and vector extension migration applied.                                    |
+| Auth / organizations / workspaces / authorization         | COMPLETE (Phase 1D)          | Application-layer organization/workspace authorization complete; RLS enabled on five tenancy tables; live two-user isolation passed 20/20 checks. |
+| Documents / storage / ingestion                           | NOT STARTED                  | Specifications only.                                                                                                                              |
+| Redis / worker / parser / chunking                        | PARTIAL                      | Redis local development baseline is validated in Docker; no worker implementation yet.                                                            |
+| Embeddings / vector / FTS / fusion / reranking            | NOT STARTED                  | Specifications only.                                                                                                                              |
+| Conversations / chat / streaming / citations              | NOT STARTED                  | Specifications only.                                                                                                                              |
+| Feedback / audit / usage                                  | NOT STARTED                  | Specifications only.                                                                                                                              |
+| Tests / evaluations                                       | PARTIAL                      | Phase 1D authorization/RLS tests and 20 live RLS checks passed; RAG evaluation absent.                                                            |
+| Docker / Compose / local infrastructure                   | COMPLETED (Phase 0 baseline) | FastAPI image and Redis service validated under `infra/docker/compose.dev.yaml`; Redis is not host-published.                                     |
+| CI / Vercel / Caddy / production deployment               | PARTIAL                      | GitHub Actions validation is complete; Vercel, Caddy and production deployment remain deferred.                                                   |
+| Production                                                | UNKNOWN externally           | No production deployment performed or verified from this workspace.                                                                               |
 
 ## Security and RAG invariants
 
@@ -125,8 +126,12 @@ and reranking; external generation through `LLMProvider`.
 - Source documents remain private in Supabase Storage; VPS files are temporary.
 - Privileged credentials remain server-side. Cross-tenant exposure blocks release.
 
-Domain authorization and RAG remain incomplete. Phase 1C tests verified-principal
-profile scoping and CORS denial; this does not establish full tenant isolation.
+Application-layer organization/workspace authorization is complete. RLS is
+enabled on profiles, organizations, organization_members, workspaces, and
+workspace_members. Live two-user cross-tenant isolation passed all 20 checks.
+The private `bismark_rls` helper schema is not exposed through the Supabase Data
+API. No organization/workspace write or administrative RLS policies were added;
+the existing profile self-update policy remains in scope. RAG remains incomplete.
 
 ## Open decisions
 
@@ -223,11 +228,12 @@ Known tooling warnings/decisions:
   pull requests and pushes to `main`.
 - Documentation and repository structure are present.
 
-Phase 1A and Phase 1B local implementation, live verification, and GitHub CI have
-completed. CI run `35966963645` passed for commit `7f905b2`. The Phase 1B
-migration contains only the five tenant foundation tables. Phase 1C authentication
-is now implemented locally. RLS, storage and production deployment remain pending.
-Open parser, worker, model and citation-retention decisions remain unchanged.
+Phase 1A, Phase 1B and Phase 1C are complete. CI run `35966963645` passed for
+commit `7f905b2`. Phase 1D implementation is complete: the RLS migration is
+applied live and two-user behavioral verification passed 20/20 checks. Phase 1D
+closeout remains blocked by Ruff findings; Storage and production deployment
+remain pending. Open parser, worker, model and citation-retention decisions
+remain unchanged; the next phase has not started.
 
 ## Phase 1C implementation — 2026-09-25
 
@@ -251,13 +257,26 @@ Open parser, worker, model and citation-retention decisions remain unchanged.
 - Browser failures were test-selector/URL assertions and a conflict with the
   running development server. Tests now use an isolated `.next-e2e` directory.
 - Ruff normalized the three existing formatting-only Python edits; migration
-  and model behavior is unchanged. No new broad documentation edits in closeout.
+  and model behavior is unchanged. No broad documentation edits were made.
 - Local credential-value/private-key scan passed; `.env` and
   `apps/web/.env.local` are ignored and excluded from commits.
-- Implementation and closeout are committed separately; GitHub Actions status
-  will be verified for the pushed closeout commit.
+- The Phase 1D commit and GitHub Actions verification are pending successful
+  completion of the required repository checks.
 - Simple manual steps: [Auth test guide](docs/AUTH_TESTING.md).
+
+## Phase 1D implementation — 2026-09-26
+
+- Application-layer organization and workspace authorization are complete.
+- RLS is enabled on profiles, organizations, organization_members, workspaces,
+  and workspace_members; migration `20260925_0003` is applied live.
+- Live two-user cross-tenant isolation verification passed 20/20 checks.
+- Confirmed `bismark_rls` is not exposed through the Supabase Data API.
+- No organization/workspace write or administrative RLS policies were added.
+- Phase 1D targeted authorization/RLS tests passed (19 tests). `make check`
+  stopped at Ruff with six findings in the Phase 1D migration and RLS test;
+  remaining checks and GitHub Actions have not been verified.
+- The next phase has not started.
 
 ## Stop boundary
 
-Phase 1C is complete. Phase 1D, RLS and tenant authorization have not started.
+Phase 1D closeout is blocked. Do not begin the next phase as part of this task.

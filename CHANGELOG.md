@@ -16,6 +16,21 @@ The format is inspired by **Keep a Changelog** and uses semantic-style version s
 
 ---
 
+## Phase 1D — 2026-09-26 (implementation complete; closeout blocked)
+
+- Completed application-layer organization and workspace authorization helpers.
+- Enabled RLS on profiles, organizations, organization_members, workspaces, and
+  workspace_members; applied migration `20260925_0003` live.
+- Verified live two-user cross-tenant isolation: 20 checks passed, 0 failed.
+- Confirmed the private `bismark_rls` helper schema is not exposed through the
+  Supabase Data API.
+- Added no organization/workspace write or administrative RLS policies beyond
+  the current read-only authorization scope and profile self-update rule.
+- Targeted authorization/RLS tests passed (19 tests). `make check` stopped at
+  Ruff with six findings in the Phase 1D migration and RLS test; GitHub Actions
+  has not been verified and phase closeout is pending.
+- The next phase has not started.
+
 ## Phase 1C — 2026-09-25 (complete, unreleased)
 
 - Added Supabase signup/login/logout, session refresh, email confirmation handling,
@@ -30,7 +45,8 @@ The format is inspired by **Keep a Changelog** and uses semantic-style version s
   recoverable invalid login and mocked password recovery/update.
 - Isolated browser test output from the running development server and corrected
   auth test selectors. No schema changes or production deployment.
-- Phase 1D, RLS and tenant authorization remain unstarted.
+- Phase 1D tenancy authorization and RLS are complete; subsequent phases remain
+  unstarted.
 
 ## How to Use This File
 
