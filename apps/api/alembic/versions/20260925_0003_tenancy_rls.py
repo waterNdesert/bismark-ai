@@ -78,8 +78,10 @@ def upgrade() -> None:
         $$
     """)
     for function in ("is_org_member(uuid)", "is_workspace_member(uuid, uuid)"):
-        op.execute(f"REVOKE ALL ON FUNCTION bismark_rls.{function} FROM PUBLIC, anon")
-        op.execute(f"GRANT EXECUTE ON FUNCTION bismark_rls.{function} TO authenticated")
+        op.execute(
+            f"REVOKE ALL ON FUNCTION bismark_rls.{function} FROM PUBLIC, anon")
+        op.execute(
+            f"GRANT EXECUTE ON FUNCTION bismark_rls.{function} TO authenticated")
 
     op.execute("""
         CREATE POLICY profiles_read_self ON public.profiles

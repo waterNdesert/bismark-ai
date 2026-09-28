@@ -12,6 +12,8 @@ from app.auth.verifier import SupabaseAuthVerifier
 from app.core.config import Settings
 from app.core.errors import ApiError, api_error_handler
 from app.db.session import create_database_engine
+from app.documents.routes import router as documents_router
+from app.storage.service import SupabaseStorageService
 from app.users.routes import router as users_router
 
 
@@ -21,9 +23,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
-        engine = create_database_engine(config) if config.database_url else None
-        application.state.session_factory = sessionmaker(engine) if engine else None
-        with httpx.Client(timeout=5.0, follow_redirects=False) as client:
+        engine = create_database_engine(
+            config) if config.database_url else None
+        application.state.session_factory = sessionmaker(
+            engine) if engine else None
+        application.state.settings = config
+        with (
+            httpx.Client(timeout=5.0, follow_redirects=False) as client,
+            httpx.Client(timeout=60.0, follow_redirects=False) as storage_client,
+        ):
             application.state.auth_verifier = (
                 SupabaseAuthVerifier(
                     config.supabase_url,
@@ -32,6 +40,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 )
                 if config.supabase_url and config.supabase_anon_key
                 else None
+            )
+            application.state.storage_service = SupabaseStorageService(
+                config, storage_client
             )
             try:
                 yield
@@ -52,6 +63,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     application.include_router(router)
     application.include_router(users_router)
+    application.include_router(documents_router)
     return application
 
 

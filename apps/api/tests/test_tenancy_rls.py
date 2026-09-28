@@ -10,7 +10,8 @@ from alembic.operations import Operations
 
 @pytest.fixture
 def migration() -> ModuleType:
-    path = Path(__file__).parents[1] / "alembic/versions/20260925_0003_tenancy_rls.py"
+    path = Path(__file__).parents[1] / \
+        "alembic/versions/20260925_0003_tenancy_rls.py"
     spec = importlib.util.spec_from_file_location("tenancy_rls", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -95,7 +96,8 @@ def test_workspace_check_requires_both_memberships_and_org_scope(
 def test_nonrecursive_helpers_are_restricted(migration: ModuleType) -> None:
     sql = render(migration, "upgrade")
     assert (
-        sql.count("SECURITY DEFINER SET search_path = '' SET row_security = off") == 2
+        sql.count(
+            "SECURITY DEFINER SET search_path = '' SET row_security = off") == 2
     )
     assert sql.count("SELECT auth.uid() IS NOT NULL AND EXISTS") == 2
     assert "REVOKE ALL ON SCHEMA bismark_rls FROM PUBLIC, anon, authenticated" in sql
