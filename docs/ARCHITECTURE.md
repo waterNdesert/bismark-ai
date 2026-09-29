@@ -12,11 +12,74 @@ Phase 1C adds browser-managed Supabase authentication and FastAPI-verified
 current-user profile reads/initialization to the five-table tenant foundation.
 The browser SDK owns signup/login/recovery/refresh/logout; FastAPI uses the
 application-owned AuthVerifier interface with an online Supabase Auth adapter.
-No authenticated SSR, tenant management, storage or RAG is implemented.
+The current foundation also includes organization/workspace authorization,
+hardened RLS/grants, private Storage, document metadata, secure manual upload and
+Ingestion Job metadata through migration `20260927_0007`. See PROJECT_STATE.md
+for implementation and verification status. Source linkage, automatic job creation,
+workers and RAG are not implemented.
 The API uses Python 3.12 and uv; the frontend uses Node.js 24 and pnpm 10.33.2.
 Each app owns its lockfile. A root Makefile coordinates development commands.
 
 ---
+
+## Source-centric architecture alignment — Phase 1E-XA
+
+Bismark AI is a Company Intelligence Layer. The canonical target flow is:
+
+```text
+Knowledge Source
+    ↓
+Connector / Source Adapter
+    ↓
+Document / Knowledge Object
+    ↓
+Ingestion Job
+    ↓
+Normalization / Parsing
+    ↓
+Chunks
+    ↓
+Embeddings / Indexes
+    ↓
+Retrieval
+    ↓
+Citations
+    ↓
+Chat / API / other interfaces
+```
+
+Manual upload is **Connector / Source #001** (`manual_upload`). Its existing
+Storage + documents + ingestion_jobs foundation remains valid; attaching it to
+`knowledge_sources` is planned. Every Connector feeds this common pipeline;
+connectors must not implement independent parsing, AI or retrieval systems.
+
+### Planned source and Connector contracts
+
+The next schema step is `knowledge_sources`: organization/workspace ownership,
+source type/name, lifecycle/status, connection/sync state, sync cursor, last sync
+timestamp, sync errors and a connector-specific connection reference. It does
+not exist yet; connection references must not expose raw credentials to users.
+
+A future replaceable Connector interface will cover `connect`, `disconnect`,
+`test_connection`, `initial_sync`, `incremental_sync`, `handle_webhook`, get/list
+items, permissions/ACL retrieval and credential refresh. Capability support may
+vary by source; manual upload need not pretend to have an external sync service.
+Native integrations, Nango, Airbyte, vendor SDKs or MCP-assisted actions are
+possible implementations, not selected providers or current dependencies.
+
+Future sync must support incremental sync, change detection, deletion handling,
+bounded retries and revision/checksum awareness. Source permission/ACL propagation
+must preserve originating-system access: a user must not gain access in Bismark
+to content they could not access there. Missing/unresolved permissions fail
+closed; revocations and deletions must remove retrieval eligibility. ACL sync,
+identity mapping, reconciliation timing and retention semantics remain unbuilt.
+
+Web app, API, embeddable website assistant, voice and future Slack/Teams/mobile
+are interfaces over this same platform. Future global → plan → tenant override
+entitlements, internal usage/cost telemetry and customer limits/allowances belong
+above it; billing comes later from measured unit economics. None changes tenancy
+or source permissions. No connector provider or deployment change is selected;
+accepted ADRs and the modular monolith remain unchanged.
 
 ## 1. Purpose
 

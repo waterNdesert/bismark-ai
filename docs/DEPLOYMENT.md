@@ -776,13 +776,34 @@ Do not manually change vector dimension in production.
 
 ## 37. Storage Bucket
 
-Recommended private bucket:
+Implemented private bucket:
 
 ```text
-bismark-documents
+knowledge-documents
 ```
 
-Environment-specific naming is acceptable.
+Set `SUPABASE_STORAGE_BUCKET=knowledge-documents`; current document constraints
+require this exact bucket. Runtime Storage calls use backend-only `SUPABASE_URL`
+and `SUPABASE_SERVICE_ROLE_KEY`. Never copy the service-role key into public
+frontend configuration.
+
+Bucket setup is explicit, **not performed at application startup**. From the
+repository root, using the existing ignored environment file:
+
+```sh
+cd apps/api
+uv run --locked python ../../scripts/run_with_env.py ../../.env python -m app.storage.setup_bucket
+```
+
+The command requires `APP_ENV=development`, creates a missing bucket with
+`public=false`, verifies an existing bucket is private and rejects a public or
+unverifiable bucket. It does not silently convert a public bucket. Prior live
+private-bucket verification and upload/download/delete smoke success are recorded
+in TESTING.md; no setup or live operations were rerun for this audit.
+
+The current live Alembic head reported in the handoff is `20260927_0007`.
+Use root `make db-current` to inspect it with the existing environment loader;
+DATABASE.md records the chain. No connector infrastructure is required now.
 
 Bucket must not be public.
 
@@ -1072,7 +1093,7 @@ Endpoint:
 Expected:
 
 ```json
-{"status":"ok"}
+{ "status": "ok" }
 ```
 
 ---

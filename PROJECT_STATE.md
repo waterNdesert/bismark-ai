@@ -1,10 +1,10 @@
 # PROJECT_STATE.md — Bismark AI
 
-**Last updated:** 2026-09-26  
+**Last updated:** 2026-09-28  
 **Current phase:** Phase 1 — Supabase Foundation
-**Current task:** Phase 1D closeout validation
-**Phase status:** IMPLEMENTATION COMPLETE; CLOSEOUT BLOCKED
-**Overall status:** Phase 1D application-layer organization/workspace authorization and tenancy RLS are implemented, with 20/20 live isolation checks passed. `make check` is blocked by Ruff findings in the Phase 1D migration and RLS test. The next phase has not started.
+**Current task:** Phase 1E-XA2 — Documentation Catch-Up (documentation only)
+**Phase status:** Phase 1E-XA2 documentation catch-up complete; Phase 1E-XB not started
+**Overall status:** Foundation through migration `20260927_0007` is implemented and reported live in the current task handoff: tenancy/auth/RLS, private storage, document metadata, secure upload API and ingestion_jobs metadata. Source architecture is now documented; the source schema and downstream processing remain planned.
 
 ## Documentation authority
 
@@ -57,8 +57,10 @@ Supabase PostgreSQL connectivity via the Session Pooler and the extension-only
 migration are verified.
 The five-table tenant schema and account/profile authentication foundation exist.
 Organization/workspace authorization helpers are implemented and RLS is enabled
-on the five tenancy tables. No tenant management endpoints, ingestion worker,
-storage, Caddy production config or production deployment exists. Dependencies installed remain
+on the five tenancy tables. Private storage, secure manual upload, documents and
+ingestion_jobs metadata are implemented; documents/jobs have hardened RLS/grants.
+No tenant management endpoints, ingestion worker, Caddy production config or
+production deployment is recorded. Dependencies installed remain
 limited to the current application/tooling foundation and local Docker service
 stack. Work remains on `main`; earlier tasks recorded GitHub CI verification.
 
@@ -100,11 +102,11 @@ and reranking; external generation through `LLMProvider`.
 | Area                                                      | Status                       | Evidence                                                                                                                                          |
 | --------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Documentation and repository skeleton                     | PARTIAL FOUNDATION           | Paths normalized; applications and tooling present.                                                                                               |
-| Frontend / backend                                        | PARTIAL                      | Minimal page and health routes validated; product features absent.                                                                                |
+| Frontend / backend                                        | PARTIAL                      | Account UI, health/profile routes and secure manual upload implemented; downstream knowledge features planned.                                                                                |
 | Dependency management / lint / formatting / type checking | COMPLETE                     | Locked app dependencies, Ruff, mypy, Prettier, ESLint, TypeScript and builds pass locally; CI runs the same checks.                               |
 | Database / migrations / Supabase                          | COMPLETE (Phase 1A)          | Supabase PostgreSQL connection verified; SQLAlchemy/Alembic foundation and vector extension migration applied.                                    |
 | Auth / organizations / workspaces / authorization         | COMPLETE (Phase 1D)          | Application-layer organization/workspace authorization complete; RLS enabled on five tenancy tables; live two-user isolation passed 20/20 checks. |
-| Documents / storage / ingestion                           | NOT STARTED                  | Specifications only.                                                                                                                              |
+| Documents / storage / ingestion                           | PARTIAL                      | Private storage, document metadata, secure upload and ingestion_jobs metadata implemented; automatic job creation and workers planned.                                                                                                                              |
 | Redis / worker / parser / chunking                        | PARTIAL                      | Redis local development baseline is validated in Docker; no worker implementation yet.                                                            |
 | Embeddings / vector / FTS / fusion / reranking            | NOT STARTED                  | Specifications only.                                                                                                                              |
 | Conversations / chat / streaming / citations              | NOT STARTED                  | Specifications only.                                                                                                                              |
@@ -231,9 +233,10 @@ Known tooling warnings/decisions:
 Phase 1A, Phase 1B and Phase 1C are complete. CI run `35966963645` passed for
 commit `7f905b2`. Phase 1D implementation is complete: the RLS migration is
 applied live and two-user behavioral verification passed 20/20 checks. Phase 1D
-closeout remains blocked by Ruff findings; Storage and production deployment
-remain pending. Open parser, worker, model and citation-retention decisions
-remain unchanged; the next phase has not started.
+closeout had Ruff findings in that historical record. The current foundation
+has since advanced through `20260927_0007`, including Storage. Checks were not
+rerun in this documentation task; production deployment and open parser, worker,
+model and citation-retention decisions remain unchanged.
 
 ## Phase 1C implementation — 2026-09-25
 
@@ -264,7 +267,7 @@ remain unchanged; the next phase has not started.
   completion of the required repository checks.
 - Simple manual steps: [Auth test guide](docs/AUTH_TESTING.md).
 
-## Phase 1D implementation — 2026-09-26
+## Phase 1D implementation — historical record, 2026-09-26
 
 - Application-layer organization and workspace authorization are complete.
 - RLS is enabled on profiles, organizations, organization_members, workspaces,
@@ -275,8 +278,81 @@ remain unchanged; the next phase has not started.
 - Phase 1D targeted authorization/RLS tests passed (19 tests). `make check`
   stopped at Ruff with six findings in the Phase 1D migration and RLS test;
   remaining checks and GitHub Actions have not been verified.
-- The next phase has not started.
+- This was the state at the Phase 1D checkpoint; the current baseline follows.
+
+## Current baseline — Phase 1E-XA, 2026-09-28
+
+### IMPLEMENTED
+
+- Supabase Auth, organization/workspace authorization, tenancy RLS and hardened
+  grants; private Supabase Storage and the secure manual upload API.
+- `documents` metadata (`20260926_0004`), document tenant key
+  (`20260927_0005`), `ingestion_jobs` metadata (`20260927_0006`), and backend-only
+  document/job RLS with revoked anon/authenticated grants (`20260927_0007`).
+- Migration head `20260927_0007` is reported live by the current task handoff.
+  Models/migrations were inspected for schema facts; no live database checks,
+  tests or deployments were performed in this documentation-only task.
+- Manual upload is designated Connector / Source #001 (`manual_upload`). Existing
+  Storage + documents + ingestion_jobs remain its implementation foundation;
+  this designation does not imply a source record or Connector framework exists.
+
+### PLANNED / NOT IMPLEMENTED
+
+- `knowledge_sources` (next schema step) and source-aware document provenance.
+- Connector framework, sync engine and originating-system ACL propagation.
+- Automatic Ingestion Job creation after upload and worker foundation.
+- Parsing/normalization, chunks, embeddings/indexes, retrieval and citations/chat.
+- Website source, Google Drive / Notion and other third-party connectors.
+- Embeddable website assistant, voice and future Slack/Teams/mobile interfaces.
+- Production reranking flow, usage ledger and source ACL synchronization.
+- Global → plan → tenant override entitlements, usage/cost telemetry,
+  customer limits/allowances and later billing based on measured unit economics.
+
+### Documentation alignment and next sequence
+
+Phase 1E-XA records the Company Intelligence Layer direction and one common
+Knowledge Source → Connector → Document / Knowledge Object → Ingestion Job
+pipeline. It changes no application behavior, schema, storage or security policy.
+Next: source schema, attach manual uploads/documents to sources, automatic jobs,
+workers, parsing/normalization, chunking, embeddings/indexing, retrieval, then
+citations/chat. Source identity/backfill, connector selection, sync/deletion and
+ACL semantics remain design work; historical citation retention remains open.
+Historical test/CI results above are not a fresh closeout of current code changes.
+
+## Phase 1E-XA2 audit — 2026-09-28
+
+Repository comparison covered current models, migrations 0001–0007, tenancy
+helpers, Storage setup/service/paths, upload route/settings, runtime dependencies
+and targeted test areas. Only documentation changed; no tests, live operations,
+commits, pushes or CI ran. Prior results below are from the supplied live handoff.
+
+Current live migration head: **20260927_0007**.
+
+| Revision | Implemented foundation |
+| --- | --- |
+| 20260924_0001 | pgvector |
+| 20260924_0002 | Tenancy schema |
+| 20260925_0003 | Tenancy RLS/private helpers |
+| 20260926_0004 | documents |
+| 20260927_0005 | Document tenant-reference key |
+| 20260927_0006 | ingestion_jobs metadata |
+| 20260927_0007 | Document/job RLS and grant hardening |
+
+Private `knowledge-documents` bucket and backend Storage upload/download/delete
+were verified live. A real Auth + membership upload smoke returned 201, verified
+safe response fields, document tenant/uploader identity and private object content,
+and cleaned up its object/row. Original tenancy cross-tenant RLS checks passed;
+`bismark_rls` is not exposed through the Data API. Documents/jobs separately have
+RLS enabled, FORCE RLS disabled, zero policies and no anon/authenticated CRUD
+grants. Full schema/constraints are in DATABASE.md, HTTP behavior in API.md,
+setup command in DEPLOYMENT.md and targeted coverage/evidence in TESTING.md.
+
+Only Ingestion Job metadata exists: no automatic creation, queue/claim/retry
+execution, worker, parsing/normalization, chunks or AI processing. The historical
+Phase 1D formatting/CI checkpoint is retained; this documentation audit does not
+claim those repository checks have subsequently passed. Planned source provenance
+and the Company Intelligence Layer architecture remain unchanged.
 
 ## Stop boundary
 
-Phase 1D closeout is blocked. Do not begin the next phase as part of this task.
+Stop after Phase 1E-XA2 documentation catch-up. Phase 1E-XB has not started.

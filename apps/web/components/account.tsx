@@ -1,12 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import type { Session } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { getAuthClient, loadProfile, type Profile } from "../lib/auth";
 
 type Mode = "login" | "signup" | "reset";
 
 export default function Account() {
+  const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
   const [configured, setConfigured] = useState(true);
@@ -81,6 +84,18 @@ export default function Account() {
       });
     return () => controller.abort();
   }, [token, attempt]);
+
+  useEffect(() => {
+    if (
+      ready &&
+      session &&
+      !recovery &&
+      message !== "Your password has been updated." &&
+      profile?.id === session.user.id
+    ) {
+      router.replace("/app");
+    }
+  }, [ready, session, recovery, profile, router, message]);
 
   function changeMode(next: Mode) {
     setMode(next);
@@ -204,8 +219,9 @@ export default function Account() {
                 <>
                   <p className="account-email">{profile.email}</p>
                   <p>
-                    You’re signed in. Workspace access will appear here when
-                    it’s available.
+                    {message === "Your password has been updated."
+                      ? "You’re ready to return to your workspace."
+                      : "You’re signed in. Entering your workspace…"}
                   </p>
                 </>
               ) : profileError ? (
@@ -225,6 +241,11 @@ export default function Account() {
                 </>
               ) : (
                 <p role="status">Loading your account…</p>
+              )}
+              {message === "Your password has been updated." && (
+                <Link className="app-link-button" href="/app">
+                  Continue to workspace
+                </Link>
               )}
               <button
                 className="primary-button"

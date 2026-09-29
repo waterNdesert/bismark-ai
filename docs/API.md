@@ -11,7 +11,9 @@
 ## Current implementation scope
 
 Implemented: `/health`, `/ready` (process), `/ready/database` (database), and
-GET/POST `/api/v1/me`. Other routes below remain target contracts.
+GET/POST `/api/v1/me`, and the organization/workspace-scoped document upload
+in §36. All other domain routes below remain unimplemented target contracts;
+there are no document listing/deletion, ingestion-job or connector endpoints.
 
 Phase 1C GET `/api/v1/me` returns only `{id, email, display_name}` from the
 verified identity and existing profile. Missing profiles return 404
@@ -1028,70 +1030,59 @@ Workspace admin or org admin/owner.
 
 # PART VI — DOCUMENTS
 
-## 36. POST `/workspaces/{workspace_id}/documents`
+## 36. POST `/organizations/{organization_id}/workspaces/{workspace_id}/documents`
 
-Uploads a document.
+Implemented full route:
+`POST /api/v1/organizations/{organization_id}/workspaces/{workspace_id}/documents`.
+Requires a verified bearer token, organization membership (owner/admin/member)
+and workspace membership (admin/member), scoped to the same organization.
+Checks happen before upload validation and tenant Storage/document persistence.
 
-### Auth
+Request: `multipart/form-data` with exactly one `file` part; additional fields,
+multiple files, missing files and malformed multipart data are rejected. No
+`display_name` part is accepted. `python-multipart` is an API runtime dependency.
 
-Required.
+### Validation
 
-### Authorization
+`MAX_UPLOAD_SIZE_MB` is a positive integer, default 50; the byte limit is
+50 × 1024 × 1024 by default. The handler checks the parsed file size and reads at
+most limit + 1 bytes before uploading; this is not an HTTP ingress body-size cap.
+Filenames must be nonblank and contain no characters below ASCII 32; the original
+name is retained in metadata while the Storage filename is separately sanitized.
 
-Workspace upload permission required.
+`ALLOWED_UPLOAD_MIME_TYPES` is comma-separated, whitespace-trimmed and lowercased.
+Defaults: `application/pdf`,
+`application/vnd.openxmlformats-officedocument.wordprocessingml.document`,
+`text/plain`, `text/markdown`, `text/html`. The multipart-declared MIME value is
+split at the first semicolon, trimmed, lowercased, checked against the type/subtype
+syntax and matched exactly to that allowlist. Missing, malformed or disallowed
+values return 400. Content-signature/file-sniffing validation is not implemented.
 
-### Content Type
+### Persistence and response
 
-```http
-multipart/form-data
-```
+The server generates a document ID and tenant-safe path, uploads to private
+Storage without upsert, then inserts/flushes/commits the Document row with the
+verified uploader and status `uploaded`. It creates no Ingestion Job and enqueues
+no work yet. Storage and database writes are not a distributed transaction.
 
-### Request Parts
+On persistence failure after upload, the handler attempts database rollback and
+compensating Storage deletion. Cleanup failure is logged safely and can leave an
+orphan object; clients receive no raw Storage/database error details.
 
-Recommended:
+Success: **201 Created**, `Cache-Control: no-store`, with exactly:
+`id`, `organization_id`, `workspace_id`, `original_filename`, `mime_type`,
+`size_bytes`, `status`, `created_at`. No bucket, storage path, provider URL or
+credentials are returned.
 
-```text
-file
-display_name (optional)
-```
-
-### Server Flow
-
-1. authenticate;
-2. authorize workspace;
-3. validate file size;
-4. validate file type;
-5. create document ID;
-6. determine private storage path;
-7. upload to Supabase Storage;
-8. create document record;
-9. create ingestion job;
-10. enqueue worker job;
-11. return immediately.
-
-### Response
-
-`202 Accepted`
-
-```json
-{
-  "id": "document-uuid",
-  "workspace_id": "workspace-uuid",
-  "display_name": "Employee Handbook",
-  "filename": "employee-handbook.pdf",
-  "mime_type": "application/pdf",
-  "size_bytes": 1845520,
-  "status": "queued",
-  "created_at": "..."
-}
-```
-
-### Errors
-
-- `413 FILE_TOO_LARGE`
-- `415 FILE_TYPE_NOT_SUPPORTED`
-- `403 DOCUMENT_UPLOAD_DENIED`
-- `502 STORAGE_UPLOAD_FAILED`
+| Status | Implemented error |
+| --- | --- |
+| 401 | Existing auth layer: missing/invalid token |
+| 403 | `ORGANIZATION_ACCESS_DENIED` / `WORKSPACE_ACCESS_DENIED`; generic denial |
+| 400 | `DOCUMENT_UPLOAD_INVALID`; malformed multipart, filename or MIME metadata |
+| 413 | `DOCUMENT_TOO_LARGE` |
+| 503 | `AUTH_UNAVAILABLE`, `DATABASE_UNAVAILABLE` or `STORAGE_UNAVAILABLE` as applicable |
+| 502 | `STORAGE_UPLOAD_FAILED`; sanitized provider failure |
+| 500 | `DOCUMENT_SAVE_FAILED`; sanitized persistence failure |
 
 ---
 

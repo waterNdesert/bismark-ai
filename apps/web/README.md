@@ -15,8 +15,9 @@ pnpm start --hostname 127.0.0.1
 
 The root page provides signup, login, logout, email confirmation handling,
 password reset/recovery, and a backend-verified account view. Supabase manages
-browser session persistence and refresh; FastAPI owns profile data. Product
-workspaces, chat and shadcn/ui components remain deferred.
+browser session persistence and refresh; FastAPI owns profile data. The `/app`
+shell waits for session/profile verification and provides navigation, account
+settings and local sign-out. Backend authorization remains authoritative.
 
 Create ignored `apps/web/.env.local` with only:
 
@@ -53,3 +54,37 @@ does not support 7. ESLint 9 is retained because Next.js React plugins fail with
 10; its install-time deprecation warning remains a tooling follow-up. pnpm skips
 unrs-resolver's install script; all current checks pass without it. Next.js
 generates local AGENTS.md/CLAUDE.md guidance, which is tracked.
+
+## Authenticated UI refinement
+
+The app shares a neutral charcoal theme with the account entry. All eight app
+routes support desktop, tablet and mobile layouts. The account menu in the desktop
+sidebar or mobile navigation contains settings and Sign out. Password recovery
+stays on the account entry until the user continues to the workspace.
+
+The workspace selector is explicitly unavailable until workspace discovery is
+wired. Manual Upload links to the documents page; its upload dialog explains this
+prerequisite and does not send files. Document/member listings, conversations,
+usage, connectors and billing are marked unavailable or coming soon. Ask supports
+local draft prompts only; it does not generate or save answers. No sample metrics,
+members, workspaces or documents are presented as live data.
+
+To check locally, sign in, reload `/app`, open the account menu, and sign out.
+Reload again and confirm the sign-in screen. On mobile, open navigation to find
+the same menu. Test Escape, Tab and arrow keys in menus/dialogs. Run `pnpm lint`,
+`pnpm typecheck`, `pnpm build` and `pnpm test:e2e`; browser tests mock Auth/profile
+services and cover all app routes at 1440, 1280, 768 and 390 pixels. Screenshots are
+written to ignored Playwright test results. The public reference site returned
+HTTP 403 during the audit, so exact visual parity was not verified.
+
+### Phase 2C: Ask conversation foundation
+
+`/app/ask` uses a reusable, auto-growing `ChatComposer` and a viewport with a
+separate bottom composer area. Enter submits only when a future submit handler
+is supplied; Shift+Enter inserts a newline. Today, send is disabled and all
+suggestions only fill a local, unsaved draft. Voice and attachments are omitted.
+Reusable message, response-action, citation and follow-up components are tested
+with isolated static fixtures; no demonstration answers or sources appear in
+the app. To check manually, choose a prompt, type multiple lines, then clear the
+composer and confirm it shrinks. The existing E2E suite also verifies scrolling
+and final-message visibility at desktop, tablet and mobile sizes.

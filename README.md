@@ -8,8 +8,10 @@ answers and traceable citations.
 local Docker/Redis workflow are complete. Supabase PostgreSQL connectivity,
 SQLAlchemy, Alembic, pgvector, database readiness, and the initial five-table
 tenant schema are established. Phase 1C adds Supabase account access and verified
-profile initialization. Storage, RLS, tenant authorization, AI providers and
-production deployment remain incomplete.
+profile initialization. Tenancy authorization/RLS, private Storage, secure upload,
+document and ingestion-job metadata are implemented through `20260927_0007`.
+Sources/connectors, automatic jobs, workers, AI processing and production
+deployment remain planned.
 
 ## Intended stack
 
@@ -93,14 +95,15 @@ READMEs for Supabase redirect/email configuration and `make web-test`.
 
 ## Repository layout and status
 
-`apps/api` contains settings, health/readiness routes and tests. `apps/web` contains
+`apps/api` contains auth, tenancy helpers, Storage, secure document upload,
+metadata models, health/readiness routes and tests. `apps/web` contains
 the account-access page and Tailwind/tooling setup. Infrastructure,
 root scripts/tests and evaluation directories still contain placeholders; backend
 tests live in `apps/api/tests`.
 
 Follow [ROADMAP.md](ROADMAP.md) one phase at a time. Phase 0 is complete and
 Phase 1A establishes only the database foundation. CI runs validation on pull
-requests and pushes to `main`. Git uses main with no remote. The environment
+requests and pushes to `main`; this audit did not run CI. The environment
 template describes planned settings as well as current ones; it is not a
 production configuration.
-Retrieval, authorization and citations remain documented requirements.
+Retrieval and citations remain planned; organization/workspace authorization is implemented.

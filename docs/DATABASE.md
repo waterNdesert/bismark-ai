@@ -10,6 +10,108 @@
 
 ---
 
+## Implemented schema versus planned source model
+
+The current schema through `20260927_0007` contains the five tenancy tables
+(`profiles`, `organizations`, `organization_members`, `workspaces`,
+`workspace_members`) plus `documents` and `ingestion_jobs`. The Phase 1B section
+below describes the original tenancy foundation; later suggested SQL in this
+document is target design, not proof that those tables/columns exist.
+
+Current document/job columns (unchanged by this alignment):
+
+| Table | Implemented columns |
+| --- | --- |
+| `documents` | `id`, `organization_id`, `workspace_id`, `uploaded_by`, `original_filename`, `storage_bucket`, `storage_path`, `mime_type`, `size_bytes`, `status`, `created_at`, `updated_at`, `deleted_at` |
+| `ingestion_jobs` | `id`, `document_id`, `organization_id`, `workspace_id`, `status`, `attempt_count`, `error_code`, `error_message`, `started_at`, `completed_at`, `created_at`, `updated_at` |
+
+Documents use the private `knowledge-documents` bucket and unique storage paths.
+Document states are `uploaded`, `processing`, `ready`, `failed`; Ingestion Job
+states are `pending`, `processing`, `completed`, `failed`, with nonnegative
+attempt counts. State columns do not imply workers or processing are implemented.
+Composite FKs bind documents to `(workspace_id, organization_id)` and jobs to
+`(document_id, organization_id, workspace_id)`; those protections remain intact.
+Migration `20260927_0007` enables RLS and revokes all table privileges from
+`anon`/`authenticated` on documents/jobs; these are backend-managed tables.
+The existing upload/storage behavior and fields remain unchanged.
+
+### Implemented constraints and migration chain
+
+`documents` retains UUID PK `id` and unique `storage_path`. Required fields are
+all columns listed above except nullable `mime_type` (text), `size_bytes`
+(bigint) and `deleted_at` (timestamptz). Tenant/uploader IDs are UUIDs; names,
+Storage fields and status are text; created/updated timestamps are timestamptz
+with `now()` defaults, and status defaults to `uploaded`. Filename/path must be
+nonblank; `storage_bucket` is constrained to `knowledge-documents`.
+`(workspace_id, organization_id)` references `workspaces(id, organization_id)`;
+`uploaded_by` references `profiles(id)`, both **ON DELETE RESTRICT**.
+Indexes cover organization_id, workspace_id, uploaded_by, status and
+(organization_id, workspace_id).
+
+Migration `20260927_0005` adds `uq_documents_id_organization_workspace`:
+**UNIQUE (id, organization_id, workspace_id)**, allowing downstream tables to
+reference the full tenant identity without replacing the PK or unique path.
+
+`ingestion_jobs` uses UUID PK `id` and UUID document/tenant IDs; status is text
+(default `pending`), attempt_count is integer (default 0, CHECK >= 0), and
+created/updated timestamptz values default to `now()`. Nullable fields are text
+error_code/error_message and timestamptz started_at/completed_at. Its composite
+FK `(document_id, organization_id, workspace_id)` references the document tenant
+key with **ON DELETE RESTRICT**. Indexes cover document_id, status,
+(organization_id, workspace_id) and created_at. There is **no UNIQUE(document_id)**:
+multiple jobs per document support future retry/reprocessing/history. Only
+metadata exists; enqueueing, claiming, retries and worker processing are unbuilt.
+
+| Migration | Implemented change |
+| --- | --- |
+| `20260924_0001` | pgvector foundation |
+| `20260924_0002` | Five-table tenancy schema |
+| `20260925_0003` | Tenancy RLS and private membership helpers |
+| `20260926_0004` | Document metadata |
+| `20260927_0005` | Full document tenant-reference key |
+| `20260927_0006` | Ingestion Job metadata |
+| `20260927_0007` | Document/job RLS and grant hardening |
+
+Current live head reported in the audit handoff: **`20260927_0007`**. No source
+migration exists. The original tenancy policies do not automatically protect
+new tables. For documents/jobs, the current verified posture reported in that
+handoff is RLS enabled, FORCE RLS disabled, zero policies and no anon/authenticated
+CRUD grants. Backend database access uses its configured database role, not a
+user Data API session. Migration 0007's downgrade restores CRUD grants and
+disables RLS, so it reverses this protection; it was not run during this audit.
+
+### Next schema step — planned, not implemented
+
+```text
+organizations
+  ↓
+workspaces
+  ↓
+knowledge_sources        [planned]
+  ↓
+documents                [source linkage planned]
+  ↓
+ingestion_jobs           [metadata exists; automatic creation planned]
+  ↓
+document_chunks          [planned]
+```
+
+This is an ownership/processing relationship, not a declaration of new FKs:
+chunks will retain document/source provenance; Ingestion Jobs track processing.
+The future `knowledge_sources` entity will own organization/workspace identity,
+source type/name, lifecycle/status, connection/sync state, sync cursor, last sync
+timestamp, sync errors and a connector-specific connection reference. Manual
+upload becomes Connector / Source #001 with `source_type = manual_upload`.
+
+Future Document / Knowledge Object provenance must account for `source_id`,
+`external_id`, `external_url`, `checksum`, `revision`, `source_created_at`,
+`source_modified_at` and `last_synced_at`. These columns do not exist in the current
+document schema. Field types, uniqueness, source-scoped external IDs, backfill of
+existing uploads and tenant-safe source FKs must be settled in the next schema
+step; this documentation adds no migration. Connector credentials and propagated
+ACLs require separate future designs. Source deletion/revisions must also be
+reconciled with the existing open historical-citation retention issue.
+
 ## 1. Purpose
 
 This document defines the canonical V1 database model for Bismark AI.
@@ -156,13 +258,14 @@ requires the user to already belong to the owning organization.
 trigger is introduced. An active organization must retain at least one owner;
 transactional enforcement belongs to the future organization service/RPC layer.
 
-RLS is not implemented yet. The schema supports future policies using
-`auth.uid()` membership checks across organization and workspace membership rows.
+Tenancy RLS and hardened grants are implemented using `auth.uid()` membership
+checks. The current document/job security boundary is recorded above.
 Phase 1C adds profile initialization through authenticated POST `/api/v1/me`,
 using `INSERT ... ON CONFLICT (id) DO NOTHING`. The ID is exclusively the verified
 Supabase user ID; existing profile fields are retained and memberships are never
-created implicitly. No migration or Auth trigger is added. Storage, documents,
-RLS and all RAG tables remain deferred.
+created implicitly. Phase 1C added no migration or Auth trigger. Storage,
+documents and Ingestion Job metadata were added subsequently; source entities
+and all RAG tables remain planned.
 
 ---
 

@@ -10,7 +10,18 @@
 
 ## 1. Product Overview
 
-Bismark AI is a multi-tenant enterprise knowledge intelligence platform that enables organizations to securely upload, organize, search, and converse with their internal knowledge using retrieval-augmented generation (RAG).
+Bismark AI is a multi-tenant **Company Intelligence Layer**: it connects
+organizational knowledge from multiple sources, normalizes it through one common
+AI/retrieval pipeline, and exposes grounded answers through multiple interfaces.
+Manual document upload is the first source type, not the boundary of the product.
+
+A **Knowledge Source** represents an owned source of knowledge; a **Connector**
+(source adapter) brings its content into a **Document / Knowledge Object**; an
+**Ingestion Job** tracks processing through the shared pipeline. Manual upload is
+**Connector / Source #001**, with source type `manual_upload`. Existing private
+Storage, `documents`, the secure upload API and `ingestion_jobs` metadata remain
+valid as the first implementation to attach to this planned source abstraction.
+`knowledge_sources`, source linkage and the Connector framework are not yet built.
 
 The product will combine a modern SaaS application layer with a custom RAG pipeline. It will use Next.js for the frontend, FastAPI for backend APIs and AI orchestration, Supabase for PostgreSQL, authentication, storage, and pgvector, Voyage AI for embeddings and reranking, and an external large language model provider for answer generation.
 
@@ -39,6 +50,18 @@ The long-term goal is to evolve from document Q&A into an enterprise knowledge i
 - providing measurable AI quality and governance.
 
 ---
+
+### Future interfaces and commercial boundaries
+
+The web app, API, embeddable website assistant, voice and future Slack/Teams/mobile
+interfaces will use the same knowledge/retrieval platform, not separate knowledge
+systems. Only the current account UI and implemented backend endpoints exist;
+these downstream answer interfaces are planned.
+
+Future entitlements will follow **global → plan → tenant override**, within
+security boundaries that entitlements cannot relax. Internal usage/cost telemetry
+will inform customer-facing limits/allowances; billing follows measured unit
+economics. These are roadmap intentions, not implemented billing features.
 
 ## 3. Product Principles
 

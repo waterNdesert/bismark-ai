@@ -16,6 +16,30 @@ The format is inspired by **Keep a Changelog** and uses semantic-style version s
 
 ---
 
+## Phase 1E-XA / XA2 — 2026-09-28 (documentation only)
+
+- Aligned the Company Intelligence Layer around Knowledge Sources and one shared
+  pipeline; manual upload is Source / Connector #001. Source schema/linkage,
+  connectors, sync, workers and commercial features remain planned.
+- Reconciled current API, schema, security, operations and targeted-test records
+  with repository implementation and sanitized prior live verification reports.
+
+## Document security and job metadata — 2026-09-27 (implemented, unreleased)
+
+- Added full document tenant-reference key (`20260927_0005`) and tenant-scoped
+  ingestion_jobs metadata (`20260927_0006`); no enqueueing or workers yet.
+- Enabled document/job RLS and revoked anon/authenticated grants (`20260927_0007`)
+  after identifying that these later tables lacked the original tenancy protection.
+  They are backend-managed, with no direct-user policies; live posture verified.
+
+## Storage and documents/upload foundation — 2026-09-26–27 (implemented, unreleased)
+
+- Added explicit private bucket setup, tenant-safe Storage paths and backend-only
+  upload/download/delete; private bucket and Storage smoke verified live.
+- Added document metadata (`20260926_0004`) and authenticated, membership-scoped
+  multipart upload with safe 201 metadata, configurable size/MIME validation and
+  compensating cleanup after persistence failure. Live upload/download smoke passed.
+
 ## Phase 1D — 2026-09-26 (implementation complete; closeout blocked)
 
 - Completed application-layer organization and workspace authorization helpers.
@@ -29,7 +53,7 @@ The format is inspired by **Keep a Changelog** and uses semantic-style version s
 - Targeted authorization/RLS tests passed (19 tests). `make check` stopped at
   Ruff with six findings in the Phase 1D migration and RLS test; GitHub Actions
   has not been verified and phase closeout is pending.
-- The next phase has not started.
+- This is the historical Phase 1D checkpoint; subsequent implemented work is recorded above.
 
 ## Phase 1C — 2026-09-25 (complete, unreleased)
 
@@ -45,8 +69,7 @@ The format is inspired by **Keep a Changelog** and uses semantic-style version s
   recoverable invalid login and mocked password recovery/update.
 - Isolated browser test output from the running development server and corrected
   auth test selectors. No schema changes or production deployment.
-- Phase 1D tenancy authorization and RLS are complete; subsequent phases remain
-  unstarted.
+- Phase 1D and subsequent foundation work are recorded separately above.
 
 ## How to Use This File
 

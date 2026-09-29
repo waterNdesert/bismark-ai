@@ -38,6 +38,39 @@ This roadmap must remain consistent with:
 
 ---
 
+## Current near-term sequence — Phase 1E-XA
+
+This sequence refines the detailed phases below; it does not mark their broader
+exit criteria complete. The implemented foundation through `20260927_0007` is
+tenancy/auth/RLS, private storage, document metadata, secure manual upload API
+and Ingestion Job metadata, including the document tenant-reference key and
+backend-only document/job RLS/grants. Phase 1E-XA2 catches up documentation only;
+no source migration or automatic job creation is included. Bismark AI is a Company Intelligence Layer; manual
+upload is Connector / Source #001 (`manual_upload`), not a standalone AI pipeline.
+
+1. Source architecture alignment (Phase 1E-XA; documentation only).
+2. `knowledge_sources` schema (next schema step; Phase 1E-XB, not started).
+3. Attach documents/manual upload to a Knowledge Source.
+4. Create Ingestion Jobs automatically after successful upload.
+5. Worker foundation.
+6. Parsing/normalization into a shared Document / Knowledge Object representation.
+7. Chunking.
+8. Embeddings/indexing.
+9. Retrieval.
+10. Citations/chat over the same knowledge platform.
+
+Later: website ingestion; Google Drive / Notion; embeddable website assistant;
+entitlements/usage; billing; voice; broader Connector marketplace. Native, Nango,
+Airbyte, vendor SDK and MCP-assisted implementations remain replaceable options,
+not commitments. Incremental sync, change/deletion handling, retries and source
+ACL propagation are prerequisites for safely releasing connected sources.
+
+Future entitlements follow global → plan → tenant override, constrained by
+security policy. Internal usage/cost telemetry informs customer-facing limits
+and allowances; billing follows measured unit economics. No billing system or
+entitlement implementation is introduced here. Slack/Teams/mobile and other
+interfaces reuse the same retrieval platform when their phases are authorized.
+
 ## 2. Product Goal
 
 The first meaningful release of Bismark AI must let a real organization securely complete this workflow:
@@ -67,7 +100,9 @@ The project should follow this order:
 foundation
 → identity
 → tenancy
-→ documents
+→ documents/manual upload foundation
+→ Knowledge Source model and source linkage
+→ automatic Ingestion Job creation
 → ingestion
 → retrieval
 → reranking

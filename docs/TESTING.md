@@ -22,9 +22,41 @@ real token expiry/signature enforcement or PostgreSQL profile persistence. Befor
 accepting Phase 1C against a live development project, use two test accounts:
 confirm email, sign in, reload, initialize/read each profile, verify distinct IDs,
 reset a password, sign out, and verify invalid/expired tokens return 401. Do not
-log tokens or passwords. RLS and tenant authorization need their own later tests.
+log tokens or passwords. Current tenancy/Storage/document coverage is listed below.
 
 ---
+
+## Current targeted backend coverage and prior live evidence
+
+| Test module under apps/api/tests | Coverage present |
+| --- | --- |
+| test_organization_membership.py | Organization roles, membership denial, scoped lookup |
+| test_workspace_membership.py | Workspace roles, wrong org/workspace pairing, isolation |
+| test_tenancy_rls.py | Five-table RLS, self-profile policies, restricted helpers, migration SQL |
+| test_storage.py | Tenant paths, sanitization/traversal, private bucket setup, backend upload/download/delete, safe errors |
+| test_documents.py | Columns/nullability, restrictive FKs, checks/indexes, unique path and tenant-reference migration |
+| test_document_upload.py | 201 safe metadata, 401/403 denial, invalid filename/MIME, Storage failure and DB-failure cleanup |
+| test_ingestion_jobs.py | Columns, composite tenant FK, statuses/attempts/indexes, multiple jobs per document |
+| test_documents_security.py | RLS/grant hardening limited to documents/jobs, zero policies, downgrade SQL |
+
+These include in-memory/mock and offline migration checks, not proof of live
+policy behavior. Development has intentionally used targeted runs; no current
+full-suite total is claimed. No tests were executed in this documentation audit.
+
+Prior live development results supplied in the audit handoff (sanitized):
+
+- Original tenancy RLS: cross-tenant behavioral verification succeeded; private
+  helper schema was confirmed absent from exposed Data API schemas.
+- Private bucket verification and Storage upload/download/delete smoke passed.
+- Real Supabase Auth login and organization/workspace memberships produced HTTP
+  201 from the upload API; response fields were safe, document tenant/uploader
+  identities matched, and the private object downloaded with matching content.
+  The smoke object and document row were cleaned up.
+- Document/job security: live head `20260927_0007`, RLS enabled, FORCE RLS disabled,
+  zero policies and no anon/authenticated CRUD table privileges.
+
+These are prior reported results, not fresh live measurements. Content sniffing,
+source ACL sync and worker/RAG behavior are not implemented or verified here.
 
 ## 1. Purpose
 

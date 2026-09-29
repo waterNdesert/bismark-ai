@@ -151,9 +151,29 @@ Previous assistant answers may help preserve dialogue continuity but must not re
 
 ## 5. Ingestion Overview
 
-Document ingestion is asynchronous.
+The target pipeline is source-independent:
 
-Canonical flow:
+```text
+Knowledge Source → Connector / Source Adapter → Document / Knowledge Object
+→ Ingestion Job → Normalization / Parsing → Chunks → Embeddings / Indexes
+→ Retrieval → Citations → Chat / API / other interfaces
+```
+
+Retrieval must not depend on whether content came from manual upload, a website,
+Google Drive, Notion or future connectors. All content normalizes into the same
+downstream knowledge pipeline. Preserve source identity, external references,
+revision/checksum and originating permissions through normalization and citation
+metadata. Apply authorized organization/workspace and future source ACL scope
+inside retrieval queries, never by Python post-filtering. Unknown source access
+fails closed; synced deletions/revocations must remove retrieval eligibility.
+
+Manual upload is **Connector / Source #001** (`manual_upload`). Private Storage,
+documents and Ingestion Job metadata exist; `knowledge_sources`, source linkage,
+automatic job creation, workers, parsing, chunks, embeddings and retrieval do not.
+Website/third-party ingestion and ACL sync are future work, not alternate AI stacks.
+
+Document ingestion will be asynchronous. The existing upload branch will feed
+the common pipeline; its target processing flow below is not yet implemented:
 
 ```text
 Upload

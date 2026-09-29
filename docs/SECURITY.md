@@ -26,14 +26,62 @@ expiry, consistent with Supabase. Do not claim instant access-token revocation.
 Errors do not echo tokens, provider response bodies or database exceptions.
 
 Profile reads/inserts always use the verified principal ID. This establishes
-identity only: organization/workspace policies, RLS, rate limiting and full
-production session hardening remain incomplete. In particular, do not expose
-private tenant data through the Supabase Data API before RLS/grants are verified.
+identity only; organization/workspace authorization and RLS have subsequently
+been implemented as described below. Rate limiting and full production session
+hardening remain future work.
 No public release is approved by this phase.
 
 Provider references: [verified user lookup](https://supabase.com/docs/reference/javascript/auth-getuser),
 [password flows](https://supabase.com/docs/guides/auth/passwords), and
 [signout limitations](https://supabase.com/docs/reference/javascript/auth-signout).
+
+## Implemented tenancy, Storage and document boundaries
+
+Organization roles are owner/admin/member; workspace roles are admin/member.
+Reusable dependencies scope membership lookups by verified user and organization,
+and by workspace as well for workspace access. Non-members receive generic 403;
+missing/invalid authentication remains 401. An organization role alone does not
+substitute for workspace membership on the upload route.
+
+Migration `20260925_0003` enables RLS only on the five original tenancy tables:
+own-profile read/update, member-organization reads, organization-scoped membership
+and workspace reads, and workspace-authorized membership reads. Private
+`bismark_rls` boolean helpers use `auth.uid()`, SECURITY DEFINER and fixed empty
+search_path to avoid recursive membership policies. PUBLIC/anon execution is
+revoked; authenticated gets schema usage/function execution. The helper schema
+was verified not exposed through the Data API; live cross-tenant verification
+passed, as recorded in the prior handoff. These policies do not extend to future
+tables automatically.
+
+Storage uses the private `knowledge-documents` bucket with backend-only
+service-role credentials; these must never reach frontend code or responses.
+The upload endpoint authenticates and authorizes both memberships before tenant
+Storage or document writes. Storage paths are:
+`organizations/{organization_id}/workspaces/{workspace_id}/documents/{document_id}/{sanitized_filename}`.
+IDs are canonical UUIDs. Filename sanitization normalizes Unicode (NFKC), flattens
+path separators, replaces unsafe characters, removes traversal dot sequences and
+limits the result to 255 characters. Storage methods revalidate the namespace,
+UUIDs and sanitized filename. Paths are a defense layer, not authorization.
+
+Composite database FKs prevent cross-tenant document/job references and restrict
+deletion of referenced records. Storage upload precedes DB persistence; failed
+persistence triggers rollback and attempted compensating deletion, not an atomic
+cross-service transaction. Failed cleanup can leave an orphan for operational
+follow-up; errors exposed to clients are sanitized. Declared MIME metadata is
+validated, but content sniffing/malware inspection is still future hardening.
+
+Documents and ingestion_jobs were added after tenancy RLS and initially inherited
+public-schema grants without RLS. Migration `20260927_0007` closes that gap:
+RLS enabled, FORCE RLS disabled, zero user policies, all anon/authenticated table
+privileges revoked (including CRUD). Direct user Data API access is intentionally
+denied; these tables are backend-managed. Privileged backend/service access still
+requires application authorization and is not implemented via anon/authenticated
+roles. This does not constitute a general production security approval.
+
+Future source-level ACL synchronization is **not implemented**. Connectors must
+propagate origin permissions and revocations so Bismark access never exceeds
+origin access; unknown mappings must fail closed. Current tenant membership is
+not proof of originating-system permission.
 
 ## 1. Purpose
 
