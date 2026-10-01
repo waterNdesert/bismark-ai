@@ -14,7 +14,9 @@ export type NavSection = {
   items: NavItem[];
 };
 
-export const navigation: NavSection[] = [
+export type OrganizationRole = "owner" | "admin" | "member";
+
+const adminNavigation: NavSection[] = [
   {
     title: "PRIMARY",
     items: [
@@ -37,6 +39,7 @@ export const navigation: NavSection[] = [
         href: "/app/conversations",
         icon: "conversations",
       },
+      { label: "Analytics", href: "/app/analytics", icon: "analytics" },
     ],
   },
   {
@@ -48,3 +51,54 @@ export const navigation: NavSection[] = [
     ],
   },
 ];
+
+const memberNavigation: NavSection[] = [
+  {
+    title: "PRIMARY",
+    items: [
+      { label: "Ask Bismark", href: "/app/ask", icon: "ask" },
+      {
+        label: "Conversations",
+        href: "/app/conversations",
+        icon: "conversations",
+      },
+    ],
+  },
+];
+
+export function isTenantAdmin(
+  role: OrganizationRole | null | undefined,
+): boolean {
+  return role === "owner" || role === "admin";
+}
+
+export function navigationForRole(
+  role: OrganizationRole | null | undefined,
+): NavSection[] {
+  if (isTenantAdmin(role)) return adminNavigation;
+  return role === "member" ? memberNavigation : [];
+}
+
+const adminOnlyRoutes = [
+  "/app/sources",
+  "/app/documents",
+  "/app/members",
+  "/app/analytics",
+  "/app/usage",
+  "/app/settings",
+];
+
+export function isAdminOnlyRoute(pathname: string): boolean {
+  return (
+    pathname === "/app" ||
+    adminOnlyRoutes.some(
+      (route) => pathname === route || pathname.startsWith(`${route}/`),
+    )
+  );
+}
+
+export function requiresWorkspace(pathname: string): boolean {
+  return ["/app/ask", "/app/conversations"].some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+}

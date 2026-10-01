@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { navigation } from "../lib/navigation";
+import { navigationForRole } from "../lib/navigation";
 import { MobileNav } from "./mobile-nav";
 import { AskIcon } from "./icons";
+import { useTenant } from "./tenant-context";
 
 export function TopBar() {
   const pathname = usePathname();
-  const current = navigation
+  const { organizationRole } = useTenant();
+  const current = navigationForRole(organizationRole)
     .flatMap((s) => s.items)
     .find((i) => i.href === pathname);
   return (

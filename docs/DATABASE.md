@@ -10,19 +10,19 @@
 
 ---
 
-## Implemented schema versus planned source model
+## Implemented schema and planned processing model
 
-The current schema through `20260927_0007` contains the five tenancy tables
+The current schema through `20260928_0011` contains the five tenancy tables
 (`profiles`, `organizations`, `organization_members`, `workspaces`,
-`workspace_members`) plus `documents` and `ingestion_jobs`. The Phase 1B section
+`workspace_members`) plus `documents`, `ingestion_jobs` and `knowledge_sources`. The Phase 1B section
 below describes the original tenancy foundation; later suggested SQL in this
 document is target design, not proof that those tables/columns exist.
 
-Current document/job columns (unchanged by this alignment):
+Current document/job columns:
 
 | Table | Implemented columns |
 | --- | --- |
-| `documents` | `id`, `organization_id`, `workspace_id`, `uploaded_by`, `original_filename`, `storage_bucket`, `storage_path`, `mime_type`, `size_bytes`, `status`, `created_at`, `updated_at`, `deleted_at` |
+| `documents` | `id`, `organization_id`, `workspace_id`, `uploaded_by`, `source_id`, `original_filename`, `storage_bucket`, `storage_path`, `mime_type`, `size_bytes`, `status`, `created_at`, `updated_at`, `deleted_at` |
 | `ingestion_jobs` | `id`, `document_id`, `organization_id`, `workspace_id`, `status`, `attempt_count`, `error_code`, `error_message`, `started_at`, `completed_at`, `created_at`, `updated_at` |
 
 Documents use the private `knowledge-documents` bucket and unique storage paths.
@@ -33,12 +33,13 @@ Composite FKs bind documents to `(workspace_id, organization_id)` and jobs to
 `(document_id, organization_id, workspace_id)`; those protections remain intact.
 Migration `20260927_0007` enables RLS and revokes all table privileges from
 `anon`/`authenticated` on documents/jobs; these are backend-managed tables.
-The existing upload/storage behavior and fields remain unchanged.
+New manual uploads populate source_id; existing rows were not backfilled by the
+source-link migration. Source and document inserts share the upload transaction.
 
 ### Implemented constraints and migration chain
 
 `documents` retains UUID PK `id` and unique `storage_path`. Required fields are
-all columns listed above except nullable `mime_type` (text), `size_bytes`
+all columns listed above except nullable `source_id` (UUID), `mime_type` (text), `size_bytes`
 (bigint) and `deleted_at` (timestamptz). Tenant/uploader IDs are UUIDs; names,
 Storage fields and status are text; created/updated timestamps are timestamptz
 with `now()` defaults, and status defaults to `uploaded`. Filename/path must be
@@ -46,7 +47,7 @@ nonblank; `storage_bucket` is constrained to `knowledge-documents`.
 `(workspace_id, organization_id)` references `workspaces(id, organization_id)`;
 `uploaded_by` references `profiles(id)`, both **ON DELETE RESTRICT**.
 Indexes cover organization_id, workspace_id, uploaded_by, status and
-(organization_id, workspace_id).
+(organization_id, workspace_id), plus `ix_documents_source_id`.
 
 Migration `20260927_0005` adds `uq_documents_id_organization_workspace`:
 **UNIQUE (id, organization_id, workspace_id)**, allowing downstream tables to
@@ -71,46 +72,59 @@ metadata exists; enqueueing, claiming, retries and worker processing are unbuilt
 | `20260927_0005` | Full document tenant-reference key |
 | `20260927_0006` | Ingestion Job metadata |
 | `20260927_0007` | Document/job RLS and grant hardening |
+| `20260928_0008` | KnowledgeSource schema, RLS and restricted grants |
+| `20260928_0009` | KnowledgeSource composite tenant target key |
+| `20260928_0010` | Nullable document source FK/index |
+| `20260928_0011` | Partial canonical manual-upload source uniqueness |
 
-Current live head reported in the audit handoff: **`20260927_0007`**. No source
-migration exists. The original tenancy policies do not automatically protect
+Latest migration head: **`20260928_0011`**, reported live-verified in the prior
+migration handoff; not re-queried in this documentation-only task. The original tenancy policies do not automatically protect
 new tables. For documents/jobs, the current verified posture reported in that
 handoff is RLS enabled, FORCE RLS disabled, zero policies and no anon/authenticated
 CRUD grants. Backend database access uses its configured database role, not a
 user Data API session. Migration 0007's downgrade restores CRUD grants and
 disables RLS, so it reverses this protection; it was not run during this audit.
 
-### Next schema step — planned, not implemented
+### Implemented source ownership and uniqueness
+
+KnowledgeSource has UUID id/organization_id/workspace_id/created_by, source_type,
+name, status, nullable connection_reference/sync_status/sync_cursor/last_sync_at/
+last_sync_error, created_at/updated_at and nullable deleted_at. Checks currently
+allow only `manual_upload`, nonblank name, status active/disabled/error and nullable
+sync status idle/syncing/success/failed. Sync fields do not implement a sync engine.
+Workspace/org and created_by FKs use ON DELETE RESTRICT. The six general indexes
+on tenant/creator/type/status and tenant pair remain unchanged. RLS is enabled,
+FORCE RLS off, zero policies and no anon/authenticated CRUD grants.
+
+`uq_knowledge_sources_id_organization_workspace` is UNIQUE
+`(id, organization_id, workspace_id)` without replacing the primary key.
+`fk_documents_source_tenant` references that exact tuple from
+`(source_id, organization_id, workspace_id)` with ON DELETE RESTRICT.
+`documents.source_id` is nullable for migration/backfill safety, indexed by
+`ix_documents_source_id`; existing PK, storage_path unique and document tenant
+unique remain intact. New manual uploads always set source_id.
+
+`uq_knowledge_sources_manual_upload_workspace` is a partial UNIQUE index on
+`(organization_id, workspace_id)` WHERE `source_type = 'manual_upload' AND
+ deleted_at IS NULL`. Status is deliberately excluded: disabled/error sources
+still occupy the canonical slot, while soft-deleted sources permit replacement.
+No generic uniqueness across future source types is imposed. The upload handler
+uses a savepoint for the specific concurrent-create conflict, re-queries the
+canonical source, and returns safe 409 for a source that is not active.
 
 ```text
-organizations
-  ↓
-workspaces
-  ↓
-knowledge_sources        [planned]
-  ↓
-documents                [source linkage planned]
-  ↓
-ingestion_jobs           [metadata exists; automatic creation planned]
-  ↓
-document_chunks          [planned]
+organization → workspace → canonical Manual Upload KnowledgeSource
+                                      ↓
+                                  documents
+                                      ↓
+                          ingestion_jobs (metadata only)
 ```
 
-This is an ownership/processing relationship, not a declaration of new FKs:
-chunks will retain document/source provenance; Ingestion Jobs track processing.
-The future `knowledge_sources` entity will own organization/workspace identity,
-source type/name, lifecycle/status, connection/sync state, sync cursor, last sync
-timestamp, sync errors and a connector-specific connection reference. Manual
-upload becomes Connector / Source #001 with `source_type = manual_upload`.
-
-Future Document / Knowledge Object provenance must account for `source_id`,
-`external_id`, `external_url`, `checksum`, `revision`, `source_created_at`,
-`source_modified_at` and `last_synced_at`. These columns do not exist in the current
-document schema. Field types, uniqueness, source-scoped external IDs, backfill of
-existing uploads and tenant-safe source FKs must be settled in the next schema
-step; this documentation adds no migration. Connector credentials and propagated
-ACLs require separate future designs. Source deletion/revisions must also be
-reconciled with the existing open historical-citation retention issue.
+Automatic job creation and processing are planned. Additional document provenance
+(external_id, external_url, checksum, revision, source_created_at,
+source_modified_at, last_synced_at), source_items, revisions, connector credentials
+and ACL propagation remain planned. Historical citation/deletion retention still
+requires a design decision.
 
 ## 1. Purpose
 

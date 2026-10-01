@@ -168,8 +168,14 @@ inside retrieval queries, never by Python post-filtering. Unknown source access
 fails closed; synced deletions/revocations must remove retrieval eligibility.
 
 Manual upload is **Connector / Source #001** (`manual_upload`). Private Storage,
-documents and Ingestion Job metadata exist; `knowledge_sources`, source linkage,
-automatic job creation, workers, parsing, chunks, embeddings and retrieval do not.
+documents, Ingestion Job metadata, `knowledge_sources` and tenant-safe document
+source linkage exist. Real Manual Upload UI/API and canonical source reuse are
+live-verified. Successful status `uploaded` means stored, not processed/indexed/
+searchable/ready. Automatic job creation, workers, parsing/normalization, chunks,
+embeddings, hybrid retrieval, real Ask Bismark and citations remain unimplemented.
+Next come Documents listing/management API and real admin list UI, then automatic
+jobs, worker, parsing/normalization, chunks, embeddings/indexing, retrieval and
+real chat/citations.
 Website/third-party ingestion and ACL sync are future work, not alternate AI stacks.
 
 Document ingestion will be asynchronous. The existing upload branch will feed

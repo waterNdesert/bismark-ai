@@ -55,6 +55,102 @@ export type Profile = {
   display_name: string | null;
 };
 
+export type UploadedDocument = {
+  original_filename: string;
+  mime_type: string | null;
+  size_bytes: number | null;
+  status: string;
+  created_at: string;
+};
+
+export class DocumentUploadError extends Error {}
+
+export async function uploadDocument(
+  token: string,
+  organizationId: string,
+  workspaceId: string,
+  file: File,
+  signal: AbortSignal,
+): Promise<UploadedDocument> {
+  const form = new FormData();
+  form.append("file", file);
+  let response: Response;
+  try {
+    response = await fetch(
+      `${apiUrl()}/api/v1/organizations/${encodeURIComponent(organizationId)}` +
+        `/workspaces/${encodeURIComponent(workspaceId)}/documents`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+        cache: "no-store",
+        signal: AbortSignal.any([signal, AbortSignal.timeout(60000)]),
+        redirect: "error",
+      },
+    );
+  } catch {
+    throw new DocumentUploadError(
+      "Upload failed. Check your connection and try again.",
+    );
+  }
+
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+  if (response.status === 201 && payload && typeof payload === "object") {
+    const data = payload as Record<string, unknown>;
+    if (
+      typeof data.original_filename === "string" &&
+      typeof data.status === "string" &&
+      typeof data.created_at === "string" &&
+      (typeof data.mime_type === "string" || data.mime_type === null) &&
+      (typeof data.size_bytes === "number" || data.size_bytes === null)
+    ) {
+      return {
+        original_filename: data.original_filename,
+        mime_type: data.mime_type,
+        size_bytes: data.size_bytes,
+        status: data.status,
+        created_at: data.created_at,
+      };
+    }
+    throw new DocumentUploadError(
+      "Upload completed, but its confirmation was invalid.",
+    );
+  }
+
+  const errorCode =
+    payload &&
+    typeof payload === "object" &&
+    "error" in payload &&
+    payload.error &&
+    typeof payload.error === "object" &&
+    "code" in payload.error &&
+    typeof payload.error.code === "string"
+      ? payload.error.code
+      : "";
+  if (response.status === 400)
+    throw new DocumentUploadError(
+      "We couldn’t accept this file. Check it and try again.",
+    );
+  if (response.status === 401)
+    throw new DocumentUploadError(
+      "Your session expired. Sign in again to upload.",
+    );
+  if (response.status === 403)
+    throw new DocumentUploadError(
+      "You don’t have permission to upload to this workspace.",
+    );
+  if (response.status === 409 && errorCode === "SOURCE_UNAVAILABLE")
+    throw new DocumentUploadError(
+      "The upload source is unavailable right now. Try again later.",
+    );
+  throw new DocumentUploadError("Upload failed. Try again later.");
+}
+
 export async function loadProfile(
   token: string,
   signal: AbortSignal,

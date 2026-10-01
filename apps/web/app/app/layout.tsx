@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { AppSession } from "../../components/app-session";
+import { TenantProvider, TenantGate } from "../../components/tenant-context";
 import { Sidebar } from "../../components/sidebar";
 import { TopBar } from "../../components/top-bar";
 
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <AppSession>
+      <TenantProvider>
       <div className="app-shell">
         <a className="skip-link" href="#app-content">
           Skip to content
@@ -22,10 +24,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <div className="app-main">
           <TopBar />
           <main id="app-content" tabIndex={-1}>
-            {children}
+            <TenantGate>{children}</TenantGate>
           </main>
         </div>
       </div>
+      </TenantProvider>
     </AppSession>
   );
 }

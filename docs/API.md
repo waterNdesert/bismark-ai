@@ -11,8 +11,8 @@
 ## Current implementation scope
 
 Implemented: `/health`, `/ready` (process), `/ready/database` (database), and
-GET/POST `/api/v1/me`, and the organization/workspace-scoped document upload
-in §36. All other domain routes below remain unimplemented target contracts;
+GET/POST `/api/v1/me`, GET `/api/v1/me/context`, and the organization/workspace-scoped
+document upload in §36. All other domain routes below remain unimplemented target contracts;
 there are no document listing/deletion, ingestion-job or connector endpoints.
 
 Phase 1C GET `/api/v1/me` returns only `{id, email, display_name}` from the
@@ -34,6 +34,26 @@ adapter, so `TOKEN_EXPIRED` remains reserved. 401 includes `WWW-Authenticate`.
 Health endpoints retain their existing response format.
 
 ---
+
+## Implemented tenant bootstrap — GET `/api/v1/me/context`
+
+Requires the verified Supabase bearer session and returns HTTP 200 with
+`Cache-Control: no-store`. Response concept:
+
+```text
+organizations[]: { id, name, role, workspaces[]: { id, name, role } }
+```
+
+Organization roles are `owner|admin|member`; workspace roles are `admin|member`.
+Only the authenticated user's memberships are returned. Organization owner/admin
+never implies workspace access: each returned workspace requires an explicit
+`workspace_members` row for that user in that organization. Deleted organizations
+and workspaces are excluded. No organization memberships returns
+`{"organizations": []}`; an organization may validly have no accessible workspaces.
+Ordering is organization created_at/id, then workspace created_at/id. There is
+no backend default organization/workspace. Auth errors use the existing layer;
+unavailable database returns safe 503 `DATABASE_UNAVAILABLE`.
+
 
 ## 1. Purpose
 
@@ -1060,9 +1080,17 @@ values return 400. Content-signature/file-sniffing validation is not implemented
 
 ### Persistence and response
 
+After both membership checks, the server looks up the canonical non-deleted
+`manual_upload` source in the same organization/workspace, ordered by created_at/id.
+If absent, it creates `Manual Upload`, status `active`, created_by the verified
+user. A savepoint recovers only the specific canonical-source unique-index
+conflict and re-queries the winner; unrelated integrity failures are not swallowed.
+Disabled/error sources produce 409 `SOURCE_UNAVAILABLE`, without reactivation or
+creation of a second source. Source and Document share the database transaction.
+
 The server generates a document ID and tenant-safe path, uploads to private
 Storage without upsert, then inserts/flushes/commits the Document row with the
-verified uploader and status `uploaded`. It creates no Ingestion Job and enqueues
+verified uploader, resolved `source_id` and status `uploaded`. It creates no Ingestion Job and enqueues
 no work yet. Storage and database writes are not a distributed transaction.
 
 On persistence failure after upload, the handler attempts database rollback and
@@ -1071,20 +1099,38 @@ orphan object; clients receive no raw Storage/database error details.
 
 Success: **201 Created**, `Cache-Control: no-store`, with exactly:
 `id`, `organization_id`, `workspace_id`, `original_filename`, `mime_type`,
-`size_bytes`, `status`, `created_at`. No bucket, storage path, provider URL or
-credentials are returned.
+`size_bytes`, `status`, `created_at`. No bucket, storage path, provider URL,
+credentials or `source_id` are returned.
 
 | Status | Implemented error |
 | --- | --- |
 | 401 | Existing auth layer: missing/invalid token |
 | 403 | `ORGANIZATION_ACCESS_DENIED` / `WORKSPACE_ACCESS_DENIED`; generic denial |
 | 400 | `DOCUMENT_UPLOAD_INVALID`; malformed multipart, filename or MIME metadata |
+| 409 | `SOURCE_UNAVAILABLE`; canonical source is not active |
 | 413 | `DOCUMENT_TOO_LARGE` |
 | 503 | `AUTH_UNAVAILABLE`, `DATABASE_UNAVAILABLE` or `STORAGE_UNAVAILABLE` as applicable |
 | 502 | `STORAGE_UPLOAD_FAILED`; sanitized provider failure |
 | 500 | `DOCUMENT_SAVE_FAILED`; sanitized persistence failure |
 
 ---
+
+### Implemented frontend upload contract
+
+Sources/Documents share a dialog using the selected real context IDs, the
+current Supabase bearer token and FormData containing only `file`. The browser
+sets the multipart boundary; the helper does not manually set Content-Type.
+No hardcoded tenant IDs, service-role credentials, storage path or source_id are
+exposed. UI upload requires organization owner/admin plus workspace selection;
+workspace admin alone does not elevate an organization member. **The current
+backend route authorizes membership, not an owner/admin-only role restriction.**
+
+201 displays filename, MIME, size, created_at and `uploaded`; this means stored,
+not processed, indexed, searchable or ready. 400 gets safe file-validation copy;
+401 asks for sign-in; 403 shows permission denial; 409 SOURCE_UNAVAILABLE shows
+source-unavailable feedback; network/5xx use safe retry messages. Raw backend
+error messages are not rendered. No automatic ingestion job is created.
+
 
 ## 37. GET `/workspaces/{workspace_id}/documents`
 

@@ -11,6 +11,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getAuthClient, loadProfile, type Profile } from "../lib/auth";
 
+const AccessTokenContext = createContext<string | null>(null);
+export function useAccessToken() { return useContext(AccessTokenContext); }
+
 const ProfileContext = createContext<Profile | null>(null);
 export function useProfile() {
   return useContext(ProfileContext);
@@ -19,6 +22,7 @@ export function useProfile() {
 export function AppSession({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [error, setError] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
@@ -48,6 +52,7 @@ export function AppSession({ children }: { children: ReactNode }) {
               if (result.id !== session.user.id)
                 throw new Error("Identity mismatch");
               setProfile(result);
+              setAccessToken(session.access_token);
               setError(false);
             }
           })
@@ -89,5 +94,5 @@ export function AppSession({ children }: { children: ReactNode }) {
         )}
       </main>
     );
-  return <ProfileContext value={profile}>{children}</ProfileContext>;
+  return <ProfileContext key={profile.id} value={profile}><AccessTokenContext value={accessToken}>{children}</AccessTokenContext></ProfileContext>;
 }

@@ -35,6 +35,35 @@ Provider references: [verified user lookup](https://supabase.com/docs/reference/
 [password flows](https://supabase.com/docs/guides/auth/passwords), and
 [signout limitations](https://supabase.com/docs/reference/javascript/auth-signout).
 
+## Tenant application and upload boundary — Phase 2B–2D
+
+`/api/v1/me/context` derives tenant IDs/roles from verified user memberships,
+excluding deleted organizations/workspaces. No personal email or hardcoded tenant
+ID grants access. Organization owner/admin never implies workspace membership;
+workspace admin never implies organization-admin status. Frontend selection is
+memory-only, validated against returned context and cleared on sign-out/user
+change. Frontend guards/navigation are UX/defense in depth, not API authorization.
+
+Manual Upload UI is limited to organization owner/admin with selected explicit
+workspace access. **The existing backend upload route independently requires
+organization and workspace membership; it does not enforce owner/admin-only
+upload.** Do not describe hidden member UI as a backend role restriction.
+Uploads use the user's bearer token. Service-role keys remain backend-only;
+private `knowledge-documents` objects and storage paths are never exposed by the
+upload response. Raw provider/backend errors are not shown in the UI.
+
+The tenant composite source FK prevents cross-tenant source linkage. The partial
+unique index permits one non-deleted manual_upload source per organization and
+workspace regardless of status. Only the named uniqueness race is recovered;
+inactive canonical sources return 409 without reactivation. Source/document
+creation shares a DB transaction; DB failure rolls back and attempts compensating
+Storage deletion (not a distributed transaction).
+
+Platform super admin remains planned, with separate platform-level authorization
+and likely control-plane UI. It is not an organization role or email-derived
+privilege. The live owner-upload check is not a production security certification.
+
+
 ## Implemented tenancy, Storage and document boundaries
 
 Organization roles are owner/admin/member; workspace roles are admin/member.

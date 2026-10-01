@@ -4,7 +4,6 @@ import {
   PageHeader,
   AppPanel,
   StatusBadge,
-  AppLink,
 } from "../../../components/app-primitives";
 import {
   UploadIcon,
@@ -14,6 +13,7 @@ import {
   DocumentsIcon,
   SourcesIcon,
 } from "../../../components/icons";
+import { UploadAction } from "../../../components/upload-action";
 export const metadata: Metadata = { title: "Sources" };
 const connectors = [
   {
@@ -60,14 +60,14 @@ export default function SourcesPage() {
               <StatusBadge variant="active">Available</StatusBadge>
             </div>
             <p>
-              Start with the files you already have. PDF, Word, text, Markdown
-              and HTML.
+              Add files directly to this workspace’s knowledge. PDF, Word, text,
+              Markdown and HTML.
             </p>
           </div>
         </div>
         <div className="manual-source-action">
-          <AppLink href="/app/documents">View document uploads</AppLink>
-          <span>Private storage · Workspace access required</span>
+          <UploadAction buttonLabel="Add files" />
+          <span>Private storage · Explicit workspace access required</span>
         </div>
       </AppPanel>
       <div className="section-heading integration-heading">

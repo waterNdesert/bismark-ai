@@ -108,6 +108,16 @@ export function UsageIcon(p: IconProps) {
   );
 }
 
+export function AnalyticsIcon(p: IconProps) {
+  return wrap(
+    <>
+      <path d="M3 3v18h18" />
+      <path d="m19 9-5 5-4-4-5 5" />
+    </>,
+    p,
+  );
+}
+
 export function SettingsIcon(p: IconProps) {
   return wrap(
     <>

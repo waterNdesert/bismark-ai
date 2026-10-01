@@ -1,10 +1,55 @@
 # PROJECT_STATE.md — Bismark AI
 
-**Last updated:** 2026-09-28  
-**Current phase:** Phase 1 — Supabase Foundation
-**Current task:** Phase 1E-XA2 — Documentation Catch-Up (documentation only)
-**Phase status:** Phase 1E-XA2 documentation catch-up complete; Phase 1E-XB not started
-**Overall status:** Foundation through migration `20260927_0007` is implemented and reported live in the current task handoff: tenancy/auth/RLS, private storage, document metadata, secure upload API and ingestion_jobs metadata. Source architecture is now documented; the source schema and downstream processing remain planned.
+**Last updated:** 2026-10-01  
+**Current phase:** Phase 2B–2D — tenant application foundation and Manual Upload
+**Current task:** Documentation catch-up after live verification
+**Phase status:** Tenant context, role-aware shell, Sources and Manual Upload UI implemented; live owner upload verification passed.
+**Overall status:** Source-centric upload foundation through migration `20260928_0011` is implemented. Two live uploads verified source reuse and private Storage. Processing and retrieval remain planned.
+
+## Current checkpoint — 2026-10-01
+
+- Authenticated `/api/v1/me/context` returns real organization roles and explicit
+  workspace memberships. TenantProvider reuses AppSession authentication;
+  selection is memory-only and roles stay separate.
+- Owners/admins see Overview, Ask Bismark, Sources, Documents, Conversations,
+  Analytics, Members, Usage and Settings. Members see Ask Bismark/Conversations;
+  Account/sign-out remain available. Analytics is a placeholder, not real metrics.
+- Sources and Documents share the operational Manual Upload dialog. The UI
+  requires an owner/admin organization role plus selected workspace access;
+  the API independently checks both memberships (not an owner/admin-only policy).
+- KnowledgeSource schema, tenant target key, nullable document source linkage,
+  canonical source uniqueness and race recovery are implemented. Prior live
+  migration verification reported head `20260928_0011`; this audit does not
+  re-query migration state.
+- Live owner login, context/navigation, two HTTP 201 uploads, canonical source
+  reuse, private object contents and sign-out/reload passed. Two live test
+  documents remain intentionally stored. See [TESTING.md](docs/TESTING.md).
+- Automated checkpoint supplied for this catch-up: targeted backend context
+  tests, Ruff and mypy passed; frontend ESLint, typecheck, production build and
+  Playwright **51/51** passed. These are prior results, not reruns in this audit.
+
+### Remaining limitations
+
+Persistent Documents listing API/UI, document deletion/management, automatic
+ingestion-job creation, workers, parsing, normalization, chunks, embeddings,
+hybrid retrieval, real Ask Bismark backend/citations, production analytics,
+third-party connectors, platform super-admin/control plane, billing and
+entitlements are **not implemented**.
+
+### Next implementation sequence
+
+1. Documents listing/management API.
+2. Documents admin UI backed by real listing.
+3. Automatic ingestion-job creation.
+4. Worker foundation.
+5. Parsing/normalization.
+6. Chunks.
+7. Embeddings/indexing.
+8. Retrieval.
+9. Real Ask Bismark chat and citations.
+
+Platform super-admin remains a parallel planned track, not an immediate blocker.
+Older dated checkpoints below are historical and do not supersede this section.
 
 ## Documentation authority
 
@@ -102,11 +147,11 @@ and reranking; external generation through `LLMProvider`.
 | Area                                                      | Status                       | Evidence                                                                                                                                          |
 | --------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Documentation and repository skeleton                     | PARTIAL FOUNDATION           | Paths normalized; applications and tooling present.                                                                                               |
-| Frontend / backend                                        | PARTIAL                      | Account UI, health/profile routes and secure manual upload implemented; downstream knowledge features planned.                                                                                |
+| Frontend / backend                                        | PARTIAL                      | Tenant context, role-aware app and Manual Upload UI/API implemented; listing and downstream knowledge features planned.                                                                                |
 | Dependency management / lint / formatting / type checking | COMPLETE                     | Locked app dependencies, Ruff, mypy, Prettier, ESLint, TypeScript and builds pass locally; CI runs the same checks.                               |
 | Database / migrations / Supabase                          | COMPLETE (Phase 1A)          | Supabase PostgreSQL connection verified; SQLAlchemy/Alembic foundation and vector extension migration applied.                                    |
 | Auth / organizations / workspaces / authorization         | COMPLETE (Phase 1D)          | Application-layer organization/workspace authorization complete; RLS enabled on five tenancy tables; live two-user isolation passed 20/20 checks. |
-| Documents / storage / ingestion                           | PARTIAL                      | Private storage, document metadata, secure upload and ingestion_jobs metadata implemented; automatic job creation and workers planned.                                                                                                                              |
+| Documents / storage / ingestion                           | PARTIAL                      | Private storage, source-linked upload, canonical source uniqueness and ingestion_jobs metadata implemented; automatic jobs/workers planned.                                                                                                                              |
 | Redis / worker / parser / chunking                        | PARTIAL                      | Redis local development baseline is validated in Docker; no worker implementation yet.                                                            |
 | Embeddings / vector / FTS / fusion / reranking            | NOT STARTED                  | Specifications only.                                                                                                                              |
 | Conversations / chat / streaming / citations              | NOT STARTED                  | Specifications only.                                                                                                                              |
@@ -278,9 +323,9 @@ model and citation-retention decisions remain unchanged.
 - Phase 1D targeted authorization/RLS tests passed (19 tests). `make check`
   stopped at Ruff with six findings in the Phase 1D migration and RLS test;
   remaining checks and GitHub Actions have not been verified.
-- This was the state at the Phase 1D checkpoint; the current baseline follows.
+- This was the state at the Phase 1D checkpoint; the current checkpoint is at the top of this file.
 
-## Current baseline — Phase 1E-XA, 2026-09-28
+## Historical baseline — Phase 1E-XA, 2026-09-28
 
 ### IMPLEMENTED
 
@@ -326,7 +371,7 @@ helpers, Storage setup/service/paths, upload route/settings, runtime dependencie
 and targeted test areas. Only documentation changed; no tests, live operations,
 commits, pushes or CI ran. Prior results below are from the supplied live handoff.
 
-Current live migration head: **20260927_0007**.
+Live migration head at that historical checkpoint: **20260927_0007**.
 
 | Revision | Implemented foundation |
 | --- | --- |
@@ -353,6 +398,7 @@ Phase 1D formatting/CI checkpoint is retained; this documentation audit does not
 claim those repository checks have subsequently passed. Planned source provenance
 and the Company Intelligence Layer architecture remain unchanged.
 
-## Stop boundary
+## Documentation catch-up boundary
 
-Stop after Phase 1E-XA2 documentation catch-up. Phase 1E-XB has not started.
+This task updates documentation only; no application changes, migrations, app
+tests, commits, pushes or CI runs. Next work follows the current checkpoint above.

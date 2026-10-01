@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { navigation } from "../lib/navigation";
+import { navigationForRole } from "../lib/navigation";
 import {
   OverviewIcon,
   AskIcon,
@@ -12,8 +12,9 @@ import {
   MembersIcon,
   UsageIcon,
   SettingsIcon,
-  ChevronDownIcon,
+  AnalyticsIcon,
 } from "./icons";
+import { useTenant } from "./tenant-context";
 import { AccountMenu } from "./account-menu";
 
 const icons = {
@@ -25,9 +26,12 @@ const icons = {
   members: MembersIcon,
   usage: UsageIcon,
   settings: SettingsIcon,
+  analytics: AnalyticsIcon,
 };
 export function Navigation({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const { organizationRole } = useTenant();
+  const navigation = navigationForRole(organizationRole);
   return (
     <nav className="app-navigation" aria-label="Main">
       {navigation.map((section) => (
@@ -56,16 +60,52 @@ export function Navigation({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 export function WorkspaceControl() {
+  const context = useTenant();
+  if (context.loading || context.error) return null;
+  const org = context.selectedOrganization;
   return (
-    <div className="workspace-control">
-      <button disabled aria-label="Workspace selection unavailable">
-        <span className="workspace-symbol">W</span>
-        <span>
-          <strong>Workspace</strong>
-          <small>Selection coming soon</small>
-        </span>
-        <ChevronDownIcon />
-      </button>
+    <div className="workspace-control tenant-controls">
+      {context.organizations.length > 1 ? (
+        <label>
+          Organization
+          <select
+            aria-label="Organization"
+            value={org?.id ?? ""}
+            onChange={(event) => context.selectOrganization(event.target.value)}
+          >
+            <option value="">Select organization</option>
+            {context.organizations.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : (
+        <strong>{org?.name ?? "No organization access yet"}</strong>
+      )}
+      {org &&
+        (org.workspaces.length > 1 ? (
+          <label>
+            Workspace
+            <select
+              aria-label="Workspace"
+              value={context.selectedWorkspace?.id ?? ""}
+              onChange={(event) => context.selectWorkspace(event.target.value)}
+            >
+              <option value="">Select workspace</option>
+              {org.workspaces.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          <span>
+            {context.selectedWorkspace?.name ?? "No workspace access"}
+          </span>
+        ))}
     </div>
   );
 }

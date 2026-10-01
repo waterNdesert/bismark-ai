@@ -14,13 +14,55 @@ The browser SDK owns signup/login/recovery/refresh/logout; FastAPI uses the
 application-owned AuthVerifier interface with an online Supabase Auth adapter.
 The current foundation also includes organization/workspace authorization,
 hardened RLS/grants, private Storage, document metadata, secure manual upload and
-Ingestion Job metadata through migration `20260927_0007`. See PROJECT_STATE.md
-for implementation and verification status. Source linkage, automatic job creation,
-workers and RAG are not implemented.
+Ingestion Job metadata, KnowledgeSource and document source linkage through
+migration `20260928_0011`. Tenant context, role-aware navigation and Manual Upload
+UI are implemented and live-verified; automatic job creation, workers and RAG
+are not implemented. See PROJECT_STATE.md for current verification status.
 The API uses Python 3.12 and uv; the frontend uses Node.js 24 and pnpm 10.33.2.
 Each app owns its lockfile. A root Makefile coordinates development commands.
 
 ---
+
+## Implemented tenant application — Phase 2B–2D
+
+AppSession owns the Supabase auth listener and verified profile/access token.
+TenantProvider sits inside the authenticated shell and loads `/api/v1/me/context`
+with that token, not a second auth listener. It exposes organizations,
+selectedOrganization, selectedWorkspace, organizationRole, workspaceRole,
+loading/error, refreshContext, selectOrganization and selectWorkspace.
+
+Single organization/workspace choices auto-select. Multiple choices require an
+explicit selection unless the current in-memory choice remains valid after
+refresh. Organization switching clears/revalidates workspace selection. Choices
+are memory-only, reset on reload/sign-out/user change, and are validated against
+returned memberships; arbitrary/stale IDs and localStorage are not authorization.
+Empty organization access and zero workspace memberships are valid states.
+401 has session guidance; network/5xx has safe retry feedback.
+
+Tenant administration uses organizationRole. Owners/admins see Overview, Ask
+Bismark, Sources, Documents, Conversations, Analytics, Members, Usage and Settings.
+Members see Ask Bismark and Conversations; `/app` and admin-only routes redirect
+members to `/app/ask`. Workspace admin does not elevate an organization member.
+Account (`/app/account`) and sign-out remain available even without tenant access.
+Ask/Conversations require explicit workspace selection; tenant-level placeholders
+can render without a workspace, but uploading cannot. Guards are UX/defense in
+depth; FastAPI remains authoritative. Analytics is only a placeholder/foundation.
+
+Sources exposes Manual Upload as available. Website, Google Drive, Notion,
+SharePoint and Dropbox are noninteractive coming-soon cards. Sources/Documents
+reuse UploadAction: picker/drop, filename/size/MIME, remove/replace, busy state,
+duplicate-submit prevention, safe success/errors, responsive layout and native
+dialog focus behavior. Upload UI requires auth/token, selected organization and
+workspace, and organization owner/admin. Success means `uploaded`, not indexed.
+The persistent Documents list is not implemented; no fake list is rendered.
+
+### Platform administration — planned only
+
+Platform super admin is separate from tenant owner/admin and requires a future
+platform-level authorization model, not an organization_members role or an email
+allowlist. A separate control-plane frontend/app is a likely direction, not an
+implemented or finalized deployment. Billing/entitlements are also unimplemented.
+
 
 ## Source-centric architecture alignment — Phase 1E-XA
 
@@ -49,16 +91,17 @@ Chat / API / other interfaces
 ```
 
 Manual upload is **Connector / Source #001** (`manual_upload`). Its existing
-Storage + documents + ingestion_jobs foundation remains valid; attaching it to
-`knowledge_sources` is planned. Every Connector feeds this common pipeline;
+Storage + documents + ingestion_jobs foundation remains valid; new manual uploads
+now link to a canonical tenant/workspace `knowledge_sources` row. Every Connector
+feeds this common pipeline;
 connectors must not implement independent parsing, AI or retrieval systems.
 
-### Planned source and Connector contracts
+### Implemented source metadata and planned Connector contracts
 
-The next schema step is `knowledge_sources`: organization/workspace ownership,
-source type/name, lifecycle/status, connection/sync state, sync cursor, last sync
-timestamp, sync errors and a connector-specific connection reference. It does
-not exist yet; connection references must not expose raw credentials to users.
+`knowledge_sources` is implemented with organization/workspace ownership, source
+type/name, lifecycle/status and nullable connection/sync metadata. Only
+`manual_upload` is currently allowed; the Connector interface and actual sync
+remain planned. Connection references must not expose raw credentials to users.
 
 A future replaceable Connector interface will cover `connect`, `disconnect`,
 `test_connection`, `initial_sync`, `incremental_sync`, `handle_webhook`, get/list

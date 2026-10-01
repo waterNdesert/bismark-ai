@@ -29,6 +29,7 @@ async function mockServices(
   page: Page,
   rejectLogin = false,
   rejectProfile = false,
+  organizations = [tenantOrganization("Alpha", 1)],
 ) {
   await page.route("https://auth.example.test/auth/v1/**", async (route) => {
     const path = new URL(route.request().url()).pathname;
@@ -42,6 +43,10 @@ async function mockServices(
         json: { error_code: "invalid_credentials", msg: "Invalid credentials" },
       });
     return route.fulfill({ json: session });
+  });
+  await page.route("http://127.0.0.1:8100/api/v1/me/context", async (route) => {
+    expect(route.request().headers()["authorization"]).toBe(`Bearer ${token}`);
+    return route.fulfill({ json: { organizations } });
   });
   await page.route("http://127.0.0.1:8100/api/v1/me", async (route) => {
     expect(route.request().headers()["authorization"]).toBe(`Bearer ${token}`);
@@ -234,8 +239,10 @@ for (const width of [1440, 1280, 768, 390]) {
       "/app/documents",
       "/app/conversations",
       "/app/members",
+      "/app/analytics",
       "/app/usage",
       "/app/settings",
+      "/app/account",
     ]) {
       await page.goto(route);
       await expect(page.locator("#app-content h1")).toBeVisible();
@@ -250,10 +257,10 @@ for (const width of [1440, 1280, 768, 390]) {
         name: "Main",
         exact: true,
       });
-      await expect(navigation.locator('[aria-current="page"]')).toHaveAttribute(
-        "href",
-        route,
-      );
+      if (route !== "/app/account")
+        await expect(
+          navigation.locator('[aria-current="page"]'),
+        ).toHaveAttribute("href", route);
       if (width < 1024) await page.keyboard.press("Escape");
       await page.screenshot({
         path: test
@@ -265,9 +272,7 @@ for (const width of [1440, 1280, 768, 390]) {
     if (width < 1024)
       await page.getByRole("button", { name: "Open navigation" }).click();
     await page.getByRole("button", { name: "Account menu" }).click();
-    await expect(
-      page.getByRole("menuitem", { name: "Account & settings" }),
-    ).toBeFocused();
+    await expect(page.getByRole("menuitem", { name: "Account" })).toBeFocused();
     await page.keyboard.press("ArrowDown");
     await expect(
       page.getByRole("menuitem", { name: "Sign out", exact: true }),
@@ -322,10 +327,13 @@ test("prompt drafts, upload explanation and mobile focus behave truthfully", asy
   await page.goto("/app/documents");
   await page.getByRole("button", { name: "Upload document" }).click();
   await expect(
-    page.getByRole("dialog", { name: "Upload a document" }),
+    page.getByRole("dialog", { name: "Manual Upload" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Choose a file" }),
+    page.getByRole("button", { name: "Drop a file here or choose a file" }),
+  ).toBeEnabled();
+  await expect(
+    page.getByRole("button", { name: "Upload to workspace" }),
   ).toBeDisabled();
   await page.keyboard.press("Escape");
   await expect(
@@ -402,3 +410,322 @@ test("Ask composer grows, keeps drafts local, and respects keyboard input", asyn
   ).toBeVisible();
   expect(requests).toEqual([]);
 });
+
+function tenantOrganization(
+  name: string,
+  count: number,
+  role: "owner" | "admin" | "member" = "admin",
+  workspaceRole: "admin" | "member" = "member",
+) {
+  return {
+    id: `test-org-${name}`,
+    name,
+    role,
+    workspaces: Array.from({ length: count }, (_, index) => ({
+      id: `test-workspace-${name}-${index}`,
+      name: `${name} workspace ${index + 1}`,
+      role: workspaceRole,
+    })),
+  };
+}
+async function tenantResponse(
+  page: Page,
+  organizations: ReturnType<typeof tenantOrganization>[],
+) {
+  await page.route("**/api/v1/me/context", (route) => {
+    expect(route.request().headers()["authorization"]).toBe(`Bearer ${token}`);
+    return route.fulfill({ json: { organizations } });
+  });
+}
+test("tenant context auto-selects sole access and resets after logout", async ({
+  page,
+}) => {
+  await mockServices(page);
+  await login(page);
+  await expect(page.locator(".desktop-sidebar")).toContainText(
+    "Alpha workspace 1",
+  );
+  await page.getByRole("button", { name: "Account menu", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Sign out", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Welcome back" }),
+  ).toBeVisible();
+  await tenantResponse(page, []);
+  await login(page);
+  await expect(
+    page.getByRole("heading", { name: "No organization access yet" }),
+  ).toBeVisible();
+  await expect(page.getByText("Alpha workspace 1")).toHaveCount(0);
+});
+test("organization admins without workspace memberships have no workspace access", async ({
+  page,
+}) => {
+  await mockServices(page);
+  await tenantResponse(page, [tenantOrganization("Admin", 0)]);
+  await login(page);
+  await page.goto("/app/ask");
+  await expect(
+    page.getByRole("heading", { name: "No workspace access", exact: true }),
+  ).toBeVisible();
+});
+test("explicit tenant selection ignores stored IDs, stays scoped and resets on reload", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("organization_id", "unauthorized-org");
+    localStorage.setItem("workspace_id", "unauthorized-workspace");
+  });
+  await mockServices(page);
+  await tenantResponse(page, [
+    tenantOrganization("Alpha", 2),
+    tenantOrganization("Beta", 1),
+  ]);
+  await login(page);
+  await expect(
+    page.getByRole("heading", { name: "Select an organization" }),
+  ).toBeVisible();
+  await page
+    .getByRole("combobox", { name: "Organization", exact: true })
+    .selectOption("test-org-Alpha");
+  await page
+    .getByRole("navigation", { name: "Main" })
+    .getByRole("link", { name: "Ask Bismark", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Select a workspace" }),
+  ).toBeVisible();
+  await page
+    .getByRole("combobox", { name: "Workspace", exact: true })
+    .selectOption("test-workspace-Alpha-1");
+  await expect(
+    page.getByRole("heading", { name: "Select a workspace" }),
+  ).toHaveCount(0);
+  await page.getByRole("link", { name: "Documents", exact: true }).click();
+  await expect(
+    page.getByRole("combobox", { name: "Workspace", exact: true }),
+  ).toHaveValue("test-workspace-Alpha-1");
+  await page
+    .getByRole("combobox", { name: "Organization", exact: true })
+    .selectOption("test-org-Beta");
+  await expect(page.locator(".desktop-sidebar")).toContainText(
+    "Beta workspace 1",
+  );
+  await expect(
+    page.getByRole("combobox", { name: "Workspace", exact: true }),
+  ).toHaveCount(0);
+  await page
+    .getByRole("combobox", { name: "Organization", exact: true })
+    .selectOption("test-org-Alpha");
+  await expect(
+    page.getByRole("combobox", { name: "Workspace", exact: true }),
+  ).toHaveValue("");
+  await page.reload();
+  await expect(
+    page.getByRole("combobox", { name: "Organization", exact: true }),
+  ).toHaveValue("");
+});
+for (const failure of [401, 500, "network"] as const) {
+  test(`tenant context handles ${failure} and retries safely`, async ({
+    page,
+  }) => {
+    await mockServices(page);
+    await page.route("**/api/v1/me/context", (route) =>
+      failure === "network"
+        ? route.abort()
+        : route.fulfill({ status: failure, json: {} }),
+    );
+    await login(page);
+    await expect(page.getByRole("main").getByRole("alert")).toContainText(
+      failure === 401
+        ? "Your session could not be verified"
+        : "We couldn’t load your workspace access",
+    );
+    await tenantResponse(page, [tenantOrganization("Recovered", 1)]);
+    await page.getByRole("button", { name: "Retry workspace access" }).click();
+    await expect(page.locator(".desktop-sidebar")).toContainText(
+      "Recovered workspace 1",
+    );
+  });
+}
+
+for (const role of ["owner", "admin"] as const) {
+  test(`${role} sees full tenant navigation and can open admin routes`, async ({
+    page,
+  }) => {
+    await mockServices(page, false, false, [
+      tenantOrganization("Alpha", 1, role),
+    ]);
+    await login(page);
+    await expect(page).toHaveURL(/\/app$/);
+    const navigation = page
+      .locator(".desktop-sidebar")
+      .getByRole("navigation", {
+        name: "Main",
+      });
+    for (const label of [
+      "Overview",
+      "Ask Bismark",
+      "Sources",
+      "Documents",
+      "Conversations",
+      "Members",
+      "Analytics",
+      "Usage",
+      "Settings",
+    ])
+      await expect(navigation.getByRole("link", { name: label })).toBeVisible();
+
+    await page.goto("/app/members");
+    await expect(page.locator("#app-content h1")).toHaveText("Members");
+  });
+}
+
+test("organization member sees only chat navigation and is denied admin routes", async ({
+  page,
+}) => {
+  await mockServices(page, false, false, [
+    tenantOrganization("Member", 1, "member"),
+  ]);
+  await login(page);
+  await expect(page).toHaveURL(/\/app\/ask$/);
+
+  const navigation = page.locator(".desktop-sidebar").getByRole("navigation", {
+    name: "Main",
+  });
+  await expect(
+    navigation.getByRole("link", { name: "Ask Bismark" }),
+  ).toBeVisible();
+  await expect(
+    navigation.getByRole("link", { name: "Conversations" }),
+  ).toBeVisible();
+  for (const label of [
+    "Overview",
+    "Sources",
+    "Documents",
+    "Members",
+    "Analytics",
+    "Usage",
+    "Settings",
+  ])
+    await expect(navigation.getByRole("link", { name: label })).toHaveCount(0);
+
+  await page.goto("/app/sources");
+  await expect(page).toHaveURL(/\/app\/ask$/);
+  await expect(page.locator("#app-content h1")).not.toHaveText(
+    "Knowledge sources",
+  );
+});
+
+test("organization member visiting app root is redirected to Ask Bismark", async ({
+  page,
+}) => {
+  await mockServices(page, false, false, [
+    tenantOrganization("Member", 1, "member"),
+  ]);
+  await login(page);
+  await expect(page).toHaveURL(/\/app\/ask$/);
+  await expect(page.locator("#app-content h1")).toHaveText("Ask Bismark");
+});
+
+test("loading tenant context does not redirect a pending admin route", async ({
+  page,
+}) => {
+  await mockServices(page);
+  let releaseContext!: () => void;
+  const contextPending = new Promise<void>((resolve) => {
+    releaseContext = resolve;
+  });
+  await page.route("**/api/v1/me/context", async (route) => {
+    await contextPending;
+    await route.fulfill({
+      json: { organizations: [tenantOrganization("Alpha", 1, "admin")] },
+    });
+  });
+  await login(page);
+  await expect(page.getByRole("status")).toContainText(
+    "Loading workspace access",
+  );
+  await page.goto("/app/sources");
+  await expect(page).toHaveURL(/\/app\/sources$/);
+  releaseContext();
+  await expect(page.locator("#app-content h1")).toHaveText("Knowledge sources");
+});
+
+test("no-workspace state is truthful and account route remains available", async ({
+  page,
+}) => {
+  await mockServices(page, false, false, [
+    tenantOrganization("Admin", 0, "owner"),
+  ]);
+  await login(page);
+  await page.goto("/app/ask");
+  await expect(
+    page.getByRole("heading", { name: "No workspace access" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Account menu" }),
+  ).toBeVisible();
+  await page.goto("/app/account");
+  await expect(page.locator("#app-content h1")).toHaveText("Account");
+});
+
+test("workspace admin with organization member role does not receive admin access", async ({
+  page,
+}) => {
+  await mockServices(page, false, false, [
+    tenantOrganization("MemberWorkspaceAdmin", 1, "member", "admin"),
+  ]);
+  await login(page);
+  await expect(page).toHaveURL(/\/app\/ask$/);
+  const navigation = page.locator(".desktop-sidebar").getByRole("navigation", {
+    name: "Main",
+  });
+  await expect(navigation.getByRole("link", { name: "Sources" })).toHaveCount(
+    0,
+  );
+  await page.goto("/app/settings");
+  await expect(page).toHaveURL(/\/app\/ask$/);
+});
+
+for (const role of ["admin", "member"] as const) {
+  test(`mobile navigation for ${role} keeps account/sign-out and filters tenant links`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mockServices(page, false, false, [
+      tenantOrganization("Mobile", 1, role),
+    ]);
+    await login(page);
+    if (role === "member") await expect(page).toHaveURL(/\/app\/ask$/);
+    await page.getByRole("button", { name: "Open navigation" }).click();
+    const navigation = page
+      .getByRole("dialog", { name: "Navigation" })
+      .getByRole("navigation", { name: "Main" });
+    await expect(
+      navigation.getByRole("link", { name: "Ask Bismark" }),
+    ).toBeVisible();
+    if (role === "admin") {
+      await expect(
+        navigation.getByRole("link", { name: "Analytics" }),
+      ).toBeVisible();
+      await expect(
+        navigation.getByRole("link", { name: "Settings" }),
+      ).toBeVisible();
+    } else {
+      await expect(
+        navigation.getByRole("link", { name: "Sources" }),
+      ).toHaveCount(0);
+      await expect(
+        navigation.getByRole("link", { name: "Settings" }),
+      ).toHaveCount(0);
+    }
+    const drawer = page.getByRole("dialog", { name: "Navigation" });
+    await drawer.getByRole("button", { name: "Account menu" }).click();
+    await expect(
+      drawer.getByRole("menuitem", { name: "Sign out" }),
+    ).toBeVisible();
+    await expect(
+      drawer.getByRole("menuitem", { name: "Account" }),
+    ).toBeVisible();
+  });
+}

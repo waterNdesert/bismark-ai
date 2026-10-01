@@ -38,26 +38,29 @@ This roadmap must remain consistent with:
 
 ---
 
-## Current near-term sequence — Phase 1E-XA
+## Current near-term sequence — after Phase 2D, 2026-10-01
 
-This sequence refines the detailed phases below; it does not mark their broader
-exit criteria complete. The implemented foundation through `20260927_0007` is
-tenancy/auth/RLS, private storage, document metadata, secure manual upload API
-and Ingestion Job metadata, including the document tenant-reference key and
-backend-only document/job RLS/grants. Phase 1E-XA2 catches up documentation only;
-no source migration or automatic job creation is included. Bismark AI is a Company Intelligence Layer; manual
-upload is Connector / Source #001 (`manual_upload`), not a standalone AI pipeline.
+Phase 2B tenant bootstrap/context and role-aware application foundation, and
+Phase 2D Sources + real Manual Upload UI, are implemented. Source schema/linkage
+and canonical-source uniqueness through `20260928_0011` support the upload flow.
+Live owner verification passed with two uploads reusing one source. This does
+not complete the broader processing/RAG phases below. Manual Upload remains
+Source / Connector #001 within the shared Company Intelligence Layer pipeline.
 
-1. Source architecture alignment (Phase 1E-XA; documentation only).
-2. `knowledge_sources` schema (next schema step; Phase 1E-XB, not started).
-3. Attach documents/manual upload to a Knowledge Source.
-4. Create Ingestion Jobs automatically after successful upload.
-5. Worker foundation.
-6. Parsing/normalization into a shared Document / Knowledge Object representation.
-7. Chunking.
-8. Embeddings/indexing.
-9. Retrieval.
-10. Citations/chat over the same knowledge platform.
+1. Documents listing/management API.
+2. Documents admin UI backed by real listing.
+3. Automatic ingestion-job creation.
+4. Worker foundation.
+5. Parsing/normalization.
+6. Chunks.
+7. Embeddings/indexing.
+8. Retrieval.
+9. Real Ask Bismark chat and citations.
+
+Platform super-admin is a separate, parallel planned authorization/control-plane
+track; it is not a tenant role, email-based privilege or immediate blocker.
+Analytics is a placeholder. Persistent document listing/management and all
+processing/retrieval features above remain unimplemented.
 
 Later: website ingestion; Google Drive / Notion; embeddable website assistant;
 entitlements/usage; billing; voice; broader Connector marketplace. Native, Nango,

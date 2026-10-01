@@ -26,6 +26,59 @@ log tokens or passwords. Current tenancy/Storage/document coverage is listed bel
 
 ---
 
+## Phase 2B–2D checkpoint — 2026-10-01
+
+Prior automated results supplied for this checkpoint: targeted backend tenant
+context tests, Ruff and mypy passed; frontend ESLint, TypeScript and production
+build passed; Playwright **51/51 passed**. These are recorded handoff results,
+not a new run or CI result from this documentation audit. Repository inspection
+confirmed the tests and their coverage; it cannot independently prove execution.
+The earlier 27-test tenant-context run is superseded by this supplied checkpoint.
+
+`test_me_context.py` covers auth, empty membership, organization roles, explicit
+workspace membership, no role-inferred access, cross-user/tenant exclusion,
+soft deletion, ordering and response fields. `auth.spec.ts` covers session/tenant
+selection, role navigation/guards, account access, mobile and safe context errors.
+`upload.spec.ts` covers owner/admin upload, member and workspace-admin/member UI
+denial, selected scope, bearer/FormData, remove/replace, missing workspace,
+duplicate submission, safe 400/401/403/409/network/5xx and truthful Documents/
+coming-soon connector states. Mocked checks do not prove live storage behavior.
+
+### Completed live owner verification
+
+The 2026-10-01 run used real local frontend/backend, Supabase Auth, database and
+private Storage (an isolated local Playwright browser; no mocked upload response).
+Verified:
+
+- Local frontend/API available with local API configuration; owner login and
+  `/` → `/app` without redirect loop; real owner and explicit workspace-admin
+  membership verified with read-only database checks.
+- All nine owner navigation entries and account/sign-out visible. Sources Manual
+  Upload enabled; Website/Google Drive/Notion/SharePoint/Dropbox remained
+  noninteractive coming-soon entries.
+- File selection, filename/size/MIME, removal/replacement, dialog focus, no desktop
+  overflow and disabled submission before selection/while pending worked.
+- Two real requests each returned 201 with the selected tenant/workspace and
+  Bearer auth. FormData used only `file`, without manually setting Content-Type;
+  one request per submission was observed.
+- Success showed filename/type/size/created_at and `uploaded`, explicitly without
+  claiming processing/indexing/search readiness.
+- Read-only DB checks confirmed both rows and populated source_id reference the
+  same canonical non-deleted `Manual Upload` source, with exactly one such source
+  in the workspace. Both private `knowledge-documents` objects existed, their
+  tenant-safe paths matched and downloaded bytes matched the test content.
+- Documents reused the same dialog and truthfully marked persistent listing
+  unavailable. Sign-out cleared the local session and `/` remained signed out
+  after reload.
+
+**Two live test documents remain intentionally stored.** No private identifiers,
+credentials or tokens are recorded here. This live run did not exercise mobile
+upload, synthetic provider failure, processing, retrieval or production deployment.
+Optional rejected-file live testing was not performed; safe failures have mocked
+coverage. Current work is documentation only: `git diff --check` and diff review,
+no app tests, CI, commits or pushes.
+
+
 ## Current targeted backend coverage and prior live evidence
 
 | Test module under apps/api/tests | Coverage present |
@@ -41,7 +94,7 @@ log tokens or passwords. Current tenancy/Storage/document coverage is listed bel
 
 These include in-memory/mock and offline migration checks, not proof of live
 policy behavior. Development has intentionally used targeted runs; no current
-full-suite total is claimed. No tests were executed in this documentation audit.
+backend full-suite total is claimed. No tests were executed in this documentation audit.
 
 Prior live development results supplied in the audit handoff (sanitized):
 

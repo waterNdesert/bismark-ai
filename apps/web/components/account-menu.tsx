@@ -103,10 +103,10 @@ export function AccountMenu() {
         >
           <Link
             role="menuitem"
-            href="/app/settings"
+            href="/app/account"
             onClick={() => setOpen(false)}
           >
-            Account & settings
+            Account
           </Link>
           <button role="menuitem" onClick={signOut} disabled={busy}>
             {busy ? "Signing out…" : "Sign out"}

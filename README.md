@@ -4,14 +4,12 @@ Bismark AI is a planned multi-tenant enterprise knowledge intelligence platform
 for answering questions against authorized organizational documents with grounded
 answers and traceable citations.
 
-**Current phase: Phase 1 — Supabase Foundation.** The repository foundation and
-local Docker/Redis workflow are complete. Supabase PostgreSQL connectivity,
-SQLAlchemy, Alembic, pgvector, database readiness, and the initial five-table
-tenant schema are established. Phase 1C adds Supabase account access and verified
-profile initialization. Tenancy authorization/RLS, private Storage, secure upload,
-document and ingestion-job metadata are implemented through `20260927_0007`.
-Sources/connectors, automatic jobs, workers, AI processing and production
-deployment remain planned.
+**Current phase: Phase 2B–2D — tenant application and Manual Upload foundation.**
+Authenticated tenant context, role-aware navigation, Sources and real Manual
+Upload UI are implemented. The source-centric schema extends through
+`20260928_0011`; live owner verification confirmed two uploads reuse one source
+in private Storage. Persistent document listing/management, automatic jobs,
+workers, AI processing, connectors and production deployment remain planned.
 
 ## Intended stack
 

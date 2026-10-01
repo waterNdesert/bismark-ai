@@ -15,7 +15,7 @@ export default function DocumentsPage() {
       <PageHeader
         title="Documents"
         description="The reference material behind your workspace knowledge."
-        actions={<UploadAction />}
+        actions={<UploadAction buttonLabel="Upload document" />}
       />
       <AppPanel className="library-panel">
         <div className="section-heading">
@@ -25,7 +25,7 @@ export default function DocumentsPage() {
         <EmptyState
           icon={<DocumentsIcon />}
           title="A home for your reference material"
-          description="Your workspace’s files will appear here when the document library is connected. Existing uploads aren’t listed in this view yet."
+          description="Uploads are stored for this workspace. The persistent document list is not available in this view yet."
         />
         <div className="library-footer">
           <span>PDF · DOCX · TXT · Markdown · HTML</span>

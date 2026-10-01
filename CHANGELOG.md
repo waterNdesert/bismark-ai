@@ -16,6 +16,27 @@ The format is inspired by **Keep a Changelog** and uses semantic-style version s
 
 ---
 
+## Phase 2B–2D — 2026-10-01 (implemented, unreleased)
+
+- Added authenticated tenant bootstrap, memory-only tenant/workspace context,
+  role-aware navigation/route guards, Account access and Analytics placeholder.
+- Added Sources with operational Manual Upload and noninteractive coming-soon
+  connectors; Sources/Documents reuse file selection, upload and safe feedback.
+- Source foundation: `0008` KnowledgeSource schema, `0009` composite tenant key,
+  `0010` nullable documents.source_id and restrictive tenant FK, `0011` partial
+  canonical-source uniqueness (all `20260928` revisions). Upload resolves or
+  creates its source transactionally, recovers the specific uniqueness race and
+  rejects inactive sources with safe 409; no ingestion job is created.
+- Live tenant-owner verification passed: two HTTP 201 uploads reference one
+  canonical source; private Storage contents/path and sign-out/reload verified.
+  Two test documents intentionally remain stored; no private identifiers recorded.
+- Prior automated checkpoint supplied: backend context tests/Ruff/mypy and
+  frontend lint/typecheck/build passed; Playwright 51/51. Documentation catch-up
+  ran only whitespace/diff review, not app tests or CI.
+- Documents listing/management, ingestion, RAG, real analytics, connectors and
+  platform administration remain planned.
+
+
 ## Phase 1E-XA / XA2 — 2026-09-28 (documentation only)
 
 - Aligned the Company Intelligence Layer around Knowledge Sources and one shared
